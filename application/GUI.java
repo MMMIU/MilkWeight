@@ -1,9 +1,11 @@
 /**
- * 
+ *
  */
 package application;
 
 import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 /**
@@ -13,17 +15,12 @@ import javafx.stage.Stage;
 public class GUI extends Application {
 
     @Override
-    public void start(Stage arg0) throws Exception {
+    public void start(Stage primaryStage) throws Exception {
         // TODO Auto-generated method stub
-
-    }
-
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
-        // TODO Auto-generated method stub
-
+        Scene mainScene = new Scene(new GridPane(), 500, 500);
+        primaryStage.setTitle("aaa");
+        primaryStage.setScene(mainScene);
+        primaryStage.show();
     }
 
 }

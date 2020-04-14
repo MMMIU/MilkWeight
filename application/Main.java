@@ -1,10 +1,11 @@
 package application;
 
+import javafx.application.Application;
+
 public class Main {
 
-    public static void main(String[] args) {
-        // TODO Auto-generated method stub
-
+    public static void main(String[] args) throws Exception {
+        Application.launch(test.class, args);
     }
 
 }
