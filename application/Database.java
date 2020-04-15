@@ -4,7 +4,9 @@
 package application;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Yifei Miao
@@ -34,11 +36,26 @@ public class Database {
     public static final int WEIGHTSMALLTOLARGE = 5;// Weight, small to large.
     public static final int WEIGHTLARGETOSMALL = 6;// Weight, large to small
     // Private members.
-    private List<OneRecord> database;
+    private Map<String, List<OneRecord>> databaseUsingID;
+    private Map<Integer, List<OneRecord>> databaseUsingMonth;
+    private int size;
+
+    // Private class.
+    private class Pair {
+	int month;
+	int weight;
+
+	public Pair(int month, int weight) {
+	    this.month = month;
+	    this.weight = weight;
+	}
+    }
 
     // No-argument constructor.
     public Database() {
-	this.database = new ArrayList<>();
+	this.databaseUsingID = new HashMap<>();
+	this.databaseUsingMonth = new HashMap<>();
+	this.size = 0;
     }
 
     /*
@@ -53,40 +70,62 @@ public class Database {
      * @param weight
      * Weight of the record.
      *
-     * @returns
-     * True if the record is successfully inserted into the database.
-     * False otherwise.
-     *
-     * @throws IDNotValidException
-     * ID is null or empty.
-     *
-     * @throws DateNotValidException
-     * Date is earlier than 0001-01-01.
-     *
-     * @throws WeightNotValidException
-     * Weight is smaller than 0.
-     *
-     * @throws DuplicateDateException
+     * @throws DuplicateDataException
      * There is already a record with same id and date in the database.
      */
-    public boolean add(String farmID, int date, int weight)
-	    throws IDNotValidException, DateNotValidException, WeightNotValidException, DuplicateDateException {
-	if (farmID == null || farmID.equals("")) {
-	    throw new IDNotValidException();
-	}
-	if (date <= 10101) {
-	    throw new DateNotValidException();
-	}
-	if (weight <= 0) {
-	    throw new WeightNotValidException();
-	}
-	for (OneRecord e : this.getAllRecordsOfAFarm(farmID)) {
-	    if (e.getDate() == date) {
-		throw new DuplicateDateException();
+    public void add(String farmID, int date, int weight) {
+	OneRecord record = new OneRecord(farmID, date, weight);
+	this.add(record);
+    }
+
+    /*
+     * Add a record to the database.
+     *
+     * @param record
+     *
+     * @throws DuplicateDataException
+     * There is already a record with same id and date in the database.
+     */
+    public void add(OneRecord record) {
+	if (!this.contains(record.getID())) {
+	    List<OneRecord> tmp = new ArrayList<OneRecord>();
+	    tmp.add(record);
+	    this.databaseUsingID.put(record.getID(), tmp);
+	    this.databaseUsingMonth.put(record.getDate() / 100, tmp);
+	} else {
+	    if (this.containsSameIDAndDate(record)) {
+		List<OneRecord> tmp = this.databaseUsingID.get(record.getID());
+		for (OneRecord e : tmp) {
+		    if (e.getDate() == record.getDate()) {
+			e.setWeight(e.getWeight() + record.getWeight());
+			break;
+		    }
+		}
+	    } else {
+		this.databaseUsingID.get(record.getID()).add(record);
+		this.databaseUsingMonth.get(record.getDate() / 100).add(record);
+		this.size++;
 	    }
 	}
-	this.database.add(new OneRecord(farmID, date, weight));
-	return true;
+    }
+
+    /*
+     * Return true if farmID already exists in the database.
+     */
+    public boolean contains(String farmID) {
+	return this.databaseUsingID.containsKey(farmID);
+    }
+
+    /*
+     * Return true if record date already exists in the database.
+     */
+    public boolean containsSameIDAndDate(OneRecord record) {
+	for (OneRecord r : this.databaseUsingID.get(record.getID())) {
+	    if (r.getDate() == record.getDate()) {
+		return true;
+	    }
+	}
+	return false;
     }
 
     /*
@@ -108,8 +147,25 @@ public class Database {
      * @throws DateNotValidException
      * Date is earlier than 0001-01-01 or does not exist.
      */
-    public boolean remove(String farmID, int date) throws IDNotValidException, DateNotValidException {
-	return false;
+    public boolean remove(String farmID, int date) {
+	OneRecord tmp = new OneRecord(farmID, date, 0);
+	if (!this.containsSameIDAndDate(tmp)) {
+	    return false;
+	}
+	for (int i = 0; i < this.databaseUsingID.get(farmID).size(); i++) {
+	    if (this.databaseUsingID.get(farmID).get(i).getDate() == date) {
+		this.databaseUsingID.get(farmID).remove(i);
+		break;
+	    }
+	}
+	for (int i = 0; i < this.databaseUsingMonth.get(date).size(); i++) {
+	    if (this.databaseUsingMonth.get(date).get(i).getDate() == date) {
+		this.databaseUsingMonth.get(date).remove(i);
+		break;
+	    }
+	}
+	this.size--;
+	return true;
     }
 
     /*
@@ -125,7 +181,7 @@ public class Database {
      * @throws IDNotValidException
      * ID is null or empty or farm does not exist.
      */
-    public boolean removeAFarm(String farmID) throws IDNotValidException {
+    public boolean removeAFarm(String farmID) {
 	return false;
     }
 
@@ -144,7 +200,7 @@ public class Database {
      * @throws DateNotValidException
      * Date is earlier than 0001-01-01 or Farm does not have a record on that date.
      */
-    public int getWeightForAFarmUsingDate(String farmID, int date) throws IDNotValidException, DateNotValidException {
+    public int getWeightForAFarmUsingDate(String farmID, int date) {
 	// TODO
 	return 0;
     }
@@ -161,101 +217,88 @@ public class Database {
      * @throws WeightNotValidException
      * Weight is smaller than 0.
      */
-    public List<Integer> getDateForAFarmUsingWeight(String farmID, int weight)
-	    throws IDNotValidException, DateNotValidException, WeightNotValidException {
+    public List<Integer> getDateForAFarmUsingWeight(String farmID, int weight) {
 	// TODO
 	return null;
     }
 
     /*
-     * Return a list of all records in a month.
-     *
-     * @throws DateNotValidException
-     * If no record exists in that month.
+     * Return a list of all records in a month. If data does not exist,
+     * return an empty list.
      *
      */
-    public List<OneRecord> getAllRecordsInAMonth(int yearMonth) throws DateNotValidException {
+    public List<OneRecord> getAllRecordsInAMonth(int yearMonth) {
 	// TODO
 	return null;
     }
 
     /*
-     * Return a sorted list of all records in a month.
-     *
-     * @throws DateNotValidException
-     * If no record exists in that month.
+     * Return a sorted list of all records in a month. If data does not exist,
+     * return an empty list.
      *
      */
-    public List<OneRecord> getAllRecordsInAMonth(int yearMonth, int order) throws DateNotValidException {
+    public List<OneRecord> getAllRecordsInAMonth(int yearMonth, int order) {
 	// TODO
 	return null;
     }
 
     /*
-     * Return a list of all records in a year.
+     * Return a list of all records in a year. If data does not exist,
+     * return an empty list.
      *
      * @throws DateNotValidException
      * If no record exists in that year.
      *
      */
-    public List<OneRecord> getAllRecordsInAYear(int year) throws DateNotValidException {
+    public List<OneRecord> getAllRecordsInAYear(int year) {
 	// TODO
 	return null;
     }
 
     /*
-     * Return a sorted list of all records in a year.
-     *
-     * @throws DateNotValidException
-     * If year is smaller than 1 or no record exists in that year.
+     * Return a sorted list of all records in a year. If data does not exist,
+     * return an empty list.
      *
      */
-    public List<OneRecord> getAllRecordsInAYear(int year, int order) throws DateNotValidException {
+    public List<OneRecord> getAllRecordsInAYear(int year, int order) {
 	// TODO
 	return null;
     }
 
     /*
-     * Return a list of all records in a date range.
+     * Return a list of all records in a date range. If data does not exist,
+     * return an empty list.
      *
-     * @throws DateNotValidException
-     * If either of the date is smaller than 10101 or endDate is smaller than
-     * startDate or no record exists between two dates.
      */
-    public List<OneRecord> getAllRecordsInDateRange(int startDate, int endDate) throws DateNotValidException {
+    public List<OneRecord> getAllRecordsInDateRange(int startDate, int endDate) {
 	// TODO
 	return null;
     }
 
     /*
-     * Return a sorted list of all records in a date range.
+     * Return a sorted list of all records in a date range. If data does not exist,
+     * return an empty list.
      *
-     * @throws DateNotValidException
-     * If either of the date is smaller than 10101 or endDate is smaller than
-     * startDate or no record exists between two dates.
      */
-    public List<OneRecord> getAllRecordsInDateRange(int startDate, int endDate, int order)
-	    throws DateNotValidException {
+    public List<OneRecord> getAllRecordsInDateRange(int startDate, int endDate, int order) {
 	// TODO
 	return null;
     }
 
     /*
-     * Return a list of all records of a farm.
+     * Return a list of all records of a farm. If farm does not exist, return an
+     * empty list.
      *
-     * @throws IDNotValidException
-     * ID is null or empty or no farm with that ID in the database.
      */
-    public List<OneRecord> getAllRecordsOfAFarm(String farmID) throws IDNotValidException {
+    public List<OneRecord> getAllRecordsOfAFarm(String farmID) {
 	// TODO
 	return null;
     }
 
     /*
-     * Return a sorted list of all records of a farm.
+     * Return a sorted list of all records of a farm.If farm does not exist, return
+     * an empty list.
      *
-     * @throws IDNotValidException
-     * ID is null or empty or no farm with that ID in the database.
      */
     public List<OneRecord> getAllRecordsOfAFarm(String farmID, int order) {
 	// TODO
@@ -278,52 +321,40 @@ public class Database {
     /*
      * Return average weight of all months in a year.
      *
-     * @throws DateNotValidException
-     * If year is smaller than 1 or no records exists in that year.
      */
-    public int getMonthlyAverageOfAYear(int year) throws DateNotValidException {
+    public int getMonthlyAverageOfAYear(int year) {
 	return 0;
     }
 
     /*
      * Return smallest weight of all months in a year.
-     * List[0]=month, List[1]=weight;
      *
-     * @throws DateNotValidException
-     * If year is smaller than 1 or no records exists in that year.
      */
-    public List<String> getMonthlyMinOfAYear(int year) throws DateNotValidException {
+    public Pair getMonthlyMinOfAYear(int year) {
 	return null;
     }
 
     /*
      * Return largest weight of all months in a year.
-     * List[0]=month, List[1]=weight;
      *
-     * @throws DateNotValidException
-     * If year is smaller than 1 or no records exists in that year.
      */
-    public List<String> getMonthlyMaxOfAYear(int year) throws DateNotValidException {
+    public Pair getMonthlyMaxOfAYear(int year) {
 	return null;
     }
 
     /*
      * Return average weight of all records of a farm.
      *
-     * @throws IDNotValidException
-     * ID is null or empty or no farm with that ID exists in the database.
      */
-    public int getAverageOfAFarm(String farmID) throws IDNotValidException {
+    public int getAverageOfAFarm(String farmID) {
 	return 0;
     }
 
     /*
      * Return the record with smallest weight of all records of a farm.
      *
-     * @throws IDNotValidException
-     * ID is null or empty or no farm with that ID in the database.
      */
-    public OneRecord getMinOfAFarm(String farmID) throws IDNotValidException {
+    public OneRecord getMinOfAFarm(String farmID) {
 	return null;
     }
 
@@ -333,7 +364,7 @@ public class Database {
      * @throws IDNotValidException
      * ID is null or empty or no farm with that ID in the database.
      */
-    public OneRecord getMaxOfAFarm(String farmID) throws IDNotValidException {
+    public OneRecord getMaxOfAFarm(String farmID) {
 	return null;
     }
 
@@ -344,7 +375,7 @@ public class Database {
      * If either of the date is smaller than 10101 or endDate is smaller than
      * startDate or no record exists between two dates.
      */
-    public int getAverageInDateRange(int srartDate, int endDate) throws IDNotValidException {
+    public int getAverageInDateRange(int srartDate, int endDate) {
 	return 0;
     }
 
@@ -355,7 +386,7 @@ public class Database {
      * If either of the date is smaller than 10101 or endDate is smaller than
      * startDate or no record exists between two dates.
      */
-    public OneRecord getMinInDateRange(int srartDate, int endDate) throws IDNotValidException {
+    public OneRecord getMinInDateRange(int srartDate, int endDate) {
 	return null;
     }
 
@@ -366,7 +397,7 @@ public class Database {
      * If either of the date is smaller than 10101 or endDate is smaller than
      * startDate or no record exists between two dates.
      */
-    public OneRecord getMaxInDateRange(int srartDate, int endDate) throws IDNotValidException {
+    public OneRecord getMaxInDateRange(int srartDate, int endDate) {
 	return null;
     }
 
@@ -374,13 +405,15 @@ public class Database {
      * Return the size of the database.
      */
     public int size() {
-	return this.database.size();
+	return this.size();
     }
 
     /*
      * Clear the database.
      */
     public void clear() {
-	this.database = new ArrayList<>();
+	this.databaseUsingID = new HashMap<>();
+	this.databaseUsingMonth = new HashMap<>();
+	this.size = 0;
     }
 }
