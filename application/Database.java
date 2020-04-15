@@ -70,8 +70,6 @@ public class Database {
      * @param weight
      * Weight of the record.
      *
-     * @throws DuplicateDataException
-     * There is already a record with same id and date in the database.
      */
     public void add(String farmID, int date, int weight) {
 	OneRecord record = new OneRecord(farmID, date, weight);
@@ -83,8 +81,6 @@ public class Database {
      *
      * @param record
      *
-     * @throws DuplicateDataException
-     * There is already a record with same id and date in the database.
      */
     public void add(OneRecord record) {
 	if (!this.contains(record.getID())) {
@@ -141,11 +137,6 @@ public class Database {
      * True if the record is successfully inserted into the database.
      * False otherwise.
      *
-     * @throws IDNotValidException
-     * ID is null or empty or farm does not exist.
-     *
-     * @throws DateNotValidException
-     * Date is earlier than 0001-01-01 or does not exist.
      */
     public boolean remove(String farmID, int date) {
 	OneRecord tmp = new OneRecord(farmID, date, 0);
@@ -177,9 +168,6 @@ public class Database {
      * @returns
      * True if the record is successfully inserted into the database.
      * False otherwise.
-     *
-     * @throws IDNotValidException
-     * ID is null or empty or farm does not exist.
      */
     public boolean removeAFarm(String farmID) {
 	return false;
@@ -188,17 +176,6 @@ public class Database {
     /*
      * Return weight for specified id and date.
      *
-     * @param farmID
-     * Name of the farm.
-     *
-     * @param date
-     * Date of the record.
-     *
-     * @throws IDNotValidException
-     * ID is null or empty.
-     *
-     * @throws DateNotValidException
-     * Date is earlier than 0001-01-01 or Farm does not have a record on that date.
      */
     public int getWeightForAFarmUsingDate(String farmID, int date) {
 	// TODO
@@ -208,14 +185,6 @@ public class Database {
     /*
      * Return a list of all dates for specified id and weight.
      *
-     * @throws IDNotValidException
-     * ID is null or empty.
-     *
-     * @throws DateNotValidException
-     * If no date of that id and weight is find in the database.
-     *
-     * @throws WeightNotValidException
-     * Weight is smaller than 0.
      */
     public List<Integer> getDateForAFarmUsingWeight(String farmID, int weight) {
 	// TODO
@@ -245,9 +214,6 @@ public class Database {
     /*
      * Return a list of all records in a year. If data does not exist,
      * return an empty list.
-     *
-     * @throws DateNotValidException
-     * If no record exists in that year.
      *
      */
     public List<OneRecord> getAllRecordsInAYear(int year) {
@@ -361,8 +327,6 @@ public class Database {
     /*
      * Return the record with largest weight of all records of a farm.
      *
-     * @throws IDNotValidException
-     * ID is null or empty or no farm with that ID in the database.
      */
     public OneRecord getMaxOfAFarm(String farmID) {
 	return null;
@@ -371,9 +335,6 @@ public class Database {
     /*
      * Return average weight of all records in a date range.
      *
-     * @throws DateNotValidException
-     * If either of the date is smaller than 10101 or endDate is smaller than
-     * startDate or no record exists between two dates.
      */
     public int getAverageInDateRange(int srartDate, int endDate) {
 	return 0;
@@ -382,9 +343,6 @@ public class Database {
     /*
      * Return the record with smallest weight of all records in a date range.
      *
-     * @throws DateNotValidException
-     * If either of the date is smaller than 10101 or endDate is smaller than
-     * startDate or no record exists between two dates.
      */
     public OneRecord getMinInDateRange(int srartDate, int endDate) {
 	return null;
@@ -393,9 +351,6 @@ public class Database {
     /*
      * Return the record with largest weight of all records in a date range.
      *
-     * @throws DateNotValidException
-     * If either of the date is smaller than 10101 or endDate is smaller than
-     * startDate or no record exists between two dates.
      */
     public OneRecord getMaxInDateRange(int srartDate, int endDate) {
 	return null;
