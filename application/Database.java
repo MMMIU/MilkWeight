@@ -28,11 +28,11 @@ public class Database {
 
     // Public members.
     public static final int IDSMALLTOLARGE = 1;// FarmID, small to large.
-    public static final int IDLARGETOSMALL = 1;// FarmID, large to small
-    public static final int DATESMALLTOLARGE = 1;// Date, small to large.
-    public static final int DATELARGETOSMALL = 1;// Date, large to small
-    public static final int WEIGHTSMALLTOLARGE = 1;// Weight, small to large.
-    public static final int WEIGHTLARGETOSMALL = 1;// Weight, large to small
+    public static final int IDLARGETOSMALL = 2;// FarmID, large to small
+    public static final int DATESMALLTOLARGE = 3;// Date, small to large.
+    public static final int DATELARGETOSMALL = 4;// Date, large to small
+    public static final int WEIGHTSMALLTOLARGE = 5;// Weight, small to large.
+    public static final int WEIGHTLARGETOSMALL = 6;// Weight, large to small
     // Private members.
     private List<OneRecord> database;
 
