@@ -7,9 +7,9 @@ package application;
  * @author Yifei Miao
  *
  */
-public class FileManager {
+public class FileOutputer {
 
-    public FileManager(Database database) {
+    public FileOutputer(Database database) {
 	// TODO Auto-generated constructor stub
     }
 

@@ -90,6 +90,46 @@ public class Database {
     }
 
     /*
+     * Remove a record in the database.
+     *
+     * @param farmID
+     * Name of the farm.
+     *
+     * @param date
+     * Date of the record.
+     *
+     * @returns
+     * True if the record is successfully inserted into the database.
+     * False otherwise.
+     *
+     * @throws IDNotValidException
+     * ID is null or empty or farm does not exist.
+     *
+     * @throws DateNotValidException
+     * Date is earlier than 0001-01-01 or does not exist.
+     */
+    public boolean remove(String farmID, int date) throws IDNotValidException, DateNotValidException {
+	return false;
+    }
+
+    /*
+     * Remove all records of a farm in the database.
+     *
+     * @param farmID
+     * Name of the farm.
+     *
+     * @returns
+     * True if the record is successfully inserted into the database.
+     * False otherwise.
+     *
+     * @throws IDNotValidException
+     * ID is null or empty or farm does not exist.
+     */
+    public boolean removeAFarm(String farmID) throws IDNotValidException {
+	return false;
+    }
+
+    /*
      * Return weight for specified id and date.
      *
      * @param farmID
@@ -335,5 +375,12 @@ public class Database {
      */
     public int size() {
 	return this.database.size();
+    }
+
+    /*
+     * Clear the database.
+     */
+    public void clear() {
+	this.database = new ArrayList<>();
     }
 }
