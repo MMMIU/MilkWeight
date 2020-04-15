@@ -183,7 +183,8 @@ public class Database {
     }
 
     /*
-     * Return a list of all dates for specified id and weight.
+     * Return a list of all dates for specified id and weight. Return empty list if
+     * no record.
      *
      */
     public List<Integer> getDateForAFarmUsingWeight(String farmID, int weight) {
@@ -193,7 +194,7 @@ public class Database {
 
     /*
      * Return a list of all records in a month. If data does not exist,
-     * return an empty list.
+     * return an empty list. Return empty list if no record.
      *
      */
     public List<OneRecord> getAllRecordsInAMonth(int yearMonth) {
@@ -203,7 +204,7 @@ public class Database {
 
     /*
      * Return a sorted list of all records in a month. If data does not exist,
-     * return an empty list.
+     * return an empty list. Return empty list if no record.
      *
      */
     public List<OneRecord> getAllRecordsInAMonth(int yearMonth, int order) {
@@ -213,7 +214,7 @@ public class Database {
 
     /*
      * Return a list of all records in a year. If data does not exist,
-     * return an empty list.
+     * return an empty list. Return empty list if no record.
      *
      */
     public List<OneRecord> getAllRecordsInAYear(int year) {
@@ -223,7 +224,7 @@ public class Database {
 
     /*
      * Return a sorted list of all records in a year. If data does not exist,
-     * return an empty list.
+     * return an empty list. Return empty list if no record.
      *
      */
     public List<OneRecord> getAllRecordsInAYear(int year, int order) {
@@ -233,7 +234,7 @@ public class Database {
 
     /*
      * Return a list of all records in a date range. If data does not exist,
-     * return an empty list.
+     * return an empty list. Return empty list if no record.
      *
      */
     public List<OneRecord> getAllRecordsInDateRange(int startDate, int endDate) {
@@ -243,7 +244,7 @@ public class Database {
 
     /*
      * Return a sorted list of all records in a date range. If data does not exist,
-     * return an empty list.
+     * return an empty list. Return empty list if no record.
      *
      */
     public List<OneRecord> getAllRecordsInDateRange(int startDate, int endDate, int order) {
@@ -253,7 +254,7 @@ public class Database {
 
     /*
      * Return a list of all records of a farm. If farm does not exist, return an
-     * empty list.
+     * empty list. Return empty list if no record.
      *
      */
     public List<OneRecord> getAllRecordsOfAFarm(String farmID) {
@@ -263,7 +264,7 @@ public class Database {
 
     /*
      * Return a sorted list of all records of a farm.If farm does not exist, return
-     * an empty list.
+     * an empty list. Return empty list if no record.
      *
      */
     public List<OneRecord> getAllRecordsOfAFarm(String farmID, int order) {
@@ -285,7 +286,8 @@ public class Database {
     }
 
     /*
-     * Return average weight of all months in a year.
+     * Return average weight of all months in a year. Return 0 if no record in
+     * that year.
      *
      */
     public int getMonthlyAverageOfAYear(int year) {
@@ -293,7 +295,8 @@ public class Database {
     }
 
     /*
-     * Return smallest weight of all months in a year.
+     * Return smallest weight of all months in a year. Return (0,0) if no record in
+     * that year.
      *
      */
     public Pair getMonthlyMinOfAYear(int year) {
@@ -301,7 +304,8 @@ public class Database {
     }
 
     /*
-     * Return largest weight of all months in a year.
+     * Return largest weight of all months in a year. Return (0,0) if no record in
+     * that year.
      *
      */
     public Pair getMonthlyMaxOfAYear(int year) {
@@ -317,7 +321,8 @@ public class Database {
     }
 
     /*
-     * Return the record with smallest weight of all records of a farm.
+     * Return the record with smallest weight of all records of a farm. Return
+     * ("null","0","0") if no record of that farm.
      *
      */
     public OneRecord getMinOfAFarm(String farmID) {
@@ -325,7 +330,8 @@ public class Database {
     }
 
     /*
-     * Return the record with largest weight of all records of a farm.
+     * Return the record with largest weight of all records of a farm. Return
+     * ("null","0","0") if no record of that farm.
      *
      */
     public OneRecord getMaxOfAFarm(String farmID) {
@@ -341,7 +347,9 @@ public class Database {
     }
 
     /*
-     * Return the record with smallest weight of all records in a date range.
+     * Return the record with smallest weight of all records in a date range. Return
+     * ("null","0","0") if no record in that date range.
+     * that year.
      *
      */
     public OneRecord getMinInDateRange(int srartDate, int endDate) {
@@ -349,7 +357,8 @@ public class Database {
     }
 
     /*
-     * Return the record with largest weight of all records in a date range.
+     * Return the record with largest weight of all records in a date range. Return
+     * ("null","0","0") if no record in that date range.
      *
      */
     public OneRecord getMaxInDateRange(int srartDate, int endDate) {
