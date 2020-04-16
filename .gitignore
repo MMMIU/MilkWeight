@@ -1,0 +1,4 @@
+*.zip
+/Makefile
+/milkweight
+/manifest.txt
