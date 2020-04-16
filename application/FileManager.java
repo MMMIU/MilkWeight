@@ -16,8 +16,10 @@ import java.util.regex.Pattern;
  */
 public class FileManager {
 
-    Database databse;
+    // Private members.
+    private Database databse;
 
+    // Constructor.
     public FileManager(Database database) {
 	this.databse = database;
     }
@@ -63,24 +65,47 @@ public class FileManager {
 	return errorFiles;
     }
 
+    /*
+     * Add a record to the database.
+     */
     public boolean addARecord(String farmID, int date, int weight) {
 	OneRecord record = new OneRecord(farmID.toUpperCase(), date, weight);
 	return this.addARecord(record);
     }
 
+    /*
+     * Add a record to the database.
+     */
     public boolean addARecord(OneRecord record) {
 	if (!this.checkRecordValid(record)) {
 	    return false;
 	}
 	this.databse.add(record);
-	return false;
+	return true;
     }
 
-    public boolean deleteARecord(String farmID, int date, int weight) {
-
-	return false;
+    /*
+     * Add a record to the database.
+     */
+    public boolean deleteARecord(String farmID, int date) {
+	OneRecord record = new OneRecord(farmID, date, 0);
+	return this.deleteARecord(record);
     }
 
+    /*
+     * Delete a record in the database.
+     */
+    public boolean deleteARecord(OneRecord record) {
+	if (!this.checkRecordValid(record)) {
+	    return false;
+	}
+	this.databse.remove(record);
+	return true;
+    }
+
+    /*
+     * Check data extracted from a line is valid.
+     */
     public boolean checkData(String[] data) {
 	OneRecord record = new OneRecord("", 0, 0);
 
@@ -114,6 +139,9 @@ public class FileManager {
 	return this.checkRecordValid(record);
     }
 
+    /*
+     * Check content in record is valid.
+     */
     public boolean checkRecordValid(OneRecord record) {
 	// Check ID.
 	if (record.getID() == null || record.getID().equals("")) {
@@ -123,6 +151,26 @@ public class FileManager {
 	if (record.getDate() < 0) {
 	    return false;
 	}
+	int year = record.getDate() / 10000;
+	int month = (record.getDate() % 10000) / 100;
+	int day = record.getDate() % 100;
+	if (year < 1 || month < 1 || month > 12 || day < 1 || day > 31) {
+	    return false;
+	}
+	int Feburary = 28;
+	if ((year / 4 == 0 && year / 100 != 0) || (year / 100 == 0 && year / 400 == 0)) {
+	    Feburary = 29;
+	}
+	if (month == 4 || month == 6 || month == 9 || month == 11) {
+	    if (day > 30) {
+		return false;
+	    }
+	}
+	if (month == 2) {
+	    if (day > Feburary) {
+		return false;
+	    }
+	}
 	// Check Weight.
 	if (record.getWeight() < 0) {
 	    return false;
@@ -130,6 +178,9 @@ public class FileManager {
 	return true;
     }
 
+    /*
+     * Check if input string is an integer.
+     */
     public boolean isDigit(String s) {
 	Pattern pattern = Pattern.compile("[0-9]*");
 	return pattern.matcher(s).matches();
