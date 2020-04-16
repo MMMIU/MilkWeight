@@ -22,6 +22,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
@@ -29,6 +31,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
@@ -42,7 +45,7 @@ public class GUI extends Application {
     private static final int CENTERBOX_WIDTH = 650;
     private static final int SEARCHBARBUTTON_WIDTH = 75;
     private static final int RIGHTBOX_WIDTH = 150;
-    private static final int ADDWIDOW_WIDTH = 250;
+    private static final int ADDWIDOW_WIDTH = 900;
     private static final int ERRORWIDOW_WIDTH = 250;
     // Heights.
     private static final int WINDOW_HEIGHT = 500;
@@ -50,10 +53,12 @@ public class GUI extends Application {
     private static final int TOPBOX_HEIGHT = 50;
     private static final int CENTERBOX_HEIGHT = 350;
     private static final int BUTTOMBOX_HEIGHT = 70;
-    private static final int ADDWIDOW_HEIGHT = 150;
+    private static final int ADDWIDOW_HEIGHT = 35;
     private static final int ERRORWIDOW_HEIGHT = 150;
     // Private members.
     private static final String APP_TITLE = "Milk Weight Manager-Ateam 37";
+    private static final String ADDER_TITLE = "Multiple Records Adder";
+    private static final String ERROR_TITLE = "ERROR";
     private Database database;
     private FileManager fileManager;
     private FileOutputer fileOutputer;
@@ -140,6 +145,13 @@ public class GUI extends Application {
 	rightVBox.setAlignment(Pos.TOP_CENTER);
 	VBox rightTopSpace = new VBox();
 	rightTopSpace.setMinHeight(100);
+	rightTopSpace.setMinWidth(100);
+	rightTopSpace.setAlignment(Pos.CENTER);
+	Image image = new Image("file:images/Rin.jpg");
+	ImageView imageView = new ImageView(image);
+	rightTopSpace.getChildren().addAll(imageView);
+	imageView.setFitWidth(80);
+	imageView.setFitHeight(80);
 	Button addBtn = new Button("Add");
 	addBtn.setMinHeight(30);
 	addBtn.setMinWidth(100);
@@ -214,9 +226,19 @@ public class GUI extends Application {
 		searchBoxTextField.clear();
 		List<File> errorFiles = this.fileManager.addFiles(files);
 		this.refreshTable();
+		if (errorFiles.size() > 0) {
+		    String errorText = "";
+		    for (int i = 0; i < errorFiles.size(); i++) {
+			errorText += "\n" + (i + 1) + ". " + errorFiles.get(i).getPath().toString();
+		    }
+		    this.errorWindow("Error Reading from " + errorFiles.size() + " file(s): " + errorText);
+		}
 	    }
 	});
 	// Add button.
+	addBtn.setOnAction((ActionEvent e) -> {
+	    this.addBtnWindow(primaryStage);
+	});
 	// Delete button.
 	deleteButton.setOnAction(event -> {
 	    ObservableList<Integer> list = tableView.getSelectionModel().getSelectedIndices();
@@ -264,35 +286,119 @@ public class GUI extends Application {
     private void OutputScene(Stage primaryStage) {
     }
 
-    private boolean addBtnWindow() {
+    private void addBtnWindow(Stage primaryStage) {
+	// HBox panel.
+	HBox hBox = new HBox(15);
+	hBox.setMinHeight(ADDWIDOW_HEIGHT);
+	hBox.setPadding(new Insets(5));
+	// Farm ID.
+	Label farmID = new Label("Farm ID:");
+	farmID.setAlignment(Pos.CENTER);
+	farmID.setMinHeight(ADDWIDOW_HEIGHT - 5);
+	TextField farmIDText = new TextField();
+	// Date.
+	Label date = new Label("Date:");
+	date.setAlignment(Pos.CENTER);
+	date.setMinHeight(ADDWIDOW_HEIGHT - 5);
+	TextField dateText = new TextField();
+	// Weight.
+	Label weight = new Label("Weight:");
+	weight.setAlignment(Pos.CENTER);
+	weight.setMinHeight(ADDWIDOW_HEIGHT - 5);
+	TextField weightText = new TextField();
+	// Add button.
+	Button addBtn = new Button("Add");
+	addBtn.setMinWidth(75);
+	// Cancel button.
+	Button cancelBtn = new Button("Cancel");
+	cancelBtn.setMinWidth(75);
+	// Add to scene and stage.
+	hBox.getChildren().addAll(farmID, farmIDText, date, dateText, weight, weightText, addBtn, cancelBtn);
+	Scene mainScene = new Scene(hBox, ADDWIDOW_WIDTH, ADDWIDOW_HEIGHT);
+	Stage stage = new Stage();
+	stage.initModality(Modality.APPLICATION_MODAL);
+	stage.setScene(mainScene);
+	stage.setTitle(ADDER_TITLE);
+	stage.setResizable(false);
+	stage.setX(primaryStage.getX());
+	stage.setY(primaryStage.getY() + WINDOW_HEIGHT + 30);
+	stage.show();
 
-	return false;
+	// Add button operation.
+	addBtn.setOnAction((ActionEvent e) -> {
+	    String[] data = { dateText.getText(), farmIDText.getText(), weightText.getText() };
+	    farmIDText.clear();
+	    dateText.clear();
+	    weightText.clear();
+	    if (this.fileManager.checkData(data)) {
+		OneRecord record = this.fileManager.generateRecordUsingData(data);
+		this.database.add(record);
+		this.tableList.add(0, record);
+		;
+	    } else {
+		this.errorWindow("Incorrect format of data, please check.");
+	    }
+	});
+	// Cancel button operation.
+	cancelBtn.setOnAction((ActionEvent e) -> {
+	    stage.close();
+	});
     }
 
-    private boolean errorWindow() {
-
-	return false;
+    private void errorWindow(String message) {
+	VBox vBox = new VBox(20);
+	vBox.setAlignment(Pos.TOP_CENTER);
+	// Top space.
+	VBox top = new VBox();
+	top.setMinHeight(ERRORWIDOW_HEIGHT / 6);
+	// Message label.
+	Label center = new Label(message);
+	center.setMinHeight(ERRORWIDOW_HEIGHT / 3);
+	center.setMinWidth(ERRORWIDOW_WIDTH);
+	center.setAlignment(Pos.CENTER);
+	// OK button.
+	Button okBtn = new Button("OK");
+	okBtn.setAlignment(Pos.CENTER);
+	okBtn.setMinWidth(75);
+	vBox.getChildren().addAll(top, center, okBtn);
+	// Add to scene and stage.
+	Stage errorWindowStage = new Stage();
+	Scene mainScene = new Scene(vBox, ERRORWIDOW_WIDTH, ERRORWIDOW_HEIGHT);
+	errorWindowStage.initModality(Modality.APPLICATION_MODAL);
+	errorWindowStage.setScene(mainScene);
+	errorWindowStage.setTitle(ERROR_TITLE);
+	errorWindowStage.show();
+	// Return button operation.
+	okBtn.setOnAction((ActionEvent e) -> {
+	    errorWindowStage.close();
+	});
     }
 
     private HBox ProgrressBar(int page) {
+	// HBox Panel.
 	HBox result = new HBox();
+	// Background color.
 	result.setBackground(new Background(new BackgroundFill(Color.DARKGRAY, null, null)));
 	result.setMinHeight(PROGRESSBAR_Height);
+	// First step.
 	Label label1 = new Label();
 	label1.setText("1.Input");
 	label1.setMinWidth(100);
 	label1.setMinHeight(PROGRESSBAR_Height);
 	label1.setAlignment(Pos.CENTER);
+	// Second step.
 	Label label2 = new Label();
 	label2.setText("2.Display");
 	label2.setMinWidth(100);
 	label2.setMinHeight(PROGRESSBAR_Height);
 	label2.setAlignment(Pos.CENTER);
+	// Third step.
 	Label label3 = new Label();
 	label3.setText("3.Output");
 	label3.setMinWidth(100);
 	label3.setMinHeight(PROGRESSBAR_Height);
 	label3.setAlignment(Pos.CENTER);
+	// Step selection.
 	if (page == 1) {
 	    label1.setBackground(new Background(new BackgroundFill(Color.GRAY, null, null)));
 	    label1.setTextFill(Color.WHITE);
@@ -303,6 +409,7 @@ public class GUI extends Application {
 	    label3.setBackground(new Background(new BackgroundFill(Color.GRAY, null, null)));
 	    label3.setTextFill(Color.WHITE);
 	}
+	// Add to panel.
 	result.getChildren().addAll(label1, label2, label3);
 	return result;
     }

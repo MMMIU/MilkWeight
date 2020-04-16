@@ -58,18 +58,7 @@ public class FileManager {
 			valid = false;
 			break;
 		    } else {
-			// Create a record.
-			OneRecord record = new OneRecord(data[1].trim().toUpperCase(), 0,
-				Integer.parseInt(data[2].trim()));
-			// Add date in suitable format to the record.
-			String date = data[0];
-			if (this.isDigit(date)) {
-			    record.setDate(Integer.parseInt(date));
-			} else {
-			    String[] dateParts = data[0].trim().split("-");
-			    record.setDate(Integer.parseInt(dateParts[0]) * 10000 + Integer.parseInt(dateParts[1]) * 100
-				    + Integer.parseInt(dateParts[2]));
-			}
+			OneRecord record = this.generateRecordUsingData(data);
 			// Add the record to the temporary list
 			records.add(record);
 		    }
@@ -86,6 +75,21 @@ public class FileManager {
 	    }
 	}
 	return errorFiles;
+    }
+
+    public OneRecord generateRecordUsingData(String[] data) {
+	// Create a record.
+	OneRecord record = new OneRecord(data[1].trim().toUpperCase(), 0, Integer.parseInt(data[2].trim()));
+	// Add date in suitable format to the record.
+	String date = data[0];
+	if (this.isDigit(date)) {
+	    record.setDate(Integer.parseInt(date));
+	} else {
+	    String[] dateParts = data[0].trim().split("-");
+	    record.setDate(Integer.parseInt(dateParts[0]) * 10000 + Integer.parseInt(dateParts[1]) * 100
+		    + Integer.parseInt(dateParts[2]));
+	}
+	return record;
     }
 
     /*
@@ -186,9 +190,9 @@ public class FileManager {
 	    return false;
 	}
 	// Check leap year.
-	int February = 28;
-	if ((year / 4 == 0 && year / 100 != 0) || (year / 100 == 0 && year / 400 == 0)) {
-	    February = 29;
+	int daysInFebruary = 28;
+	if (year % 4 == 0 && year % 100 != 0 || year % 400 == 0) {
+	    daysInFebruary = 29;
 	}
 	// Check month.
 	if (month == 4 || month == 6 || month == 9 || month == 11) {
@@ -198,7 +202,7 @@ public class FileManager {
 	}
 	// Check February.
 	if (month == 2) {
-	    if (day > February) {
+	    if (day > daysInFebruary) {
 		return false;
 	    }
 	}
