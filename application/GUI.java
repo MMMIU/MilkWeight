@@ -47,7 +47,7 @@ public class GUI extends Application {
     private static final int TOPBOX_HEIGHT = 50;
     private static final int CENTERBOX_HEIGHT = 350;
     private static final int BUTTOMBOX_HEIGHT = 70;
-
+    // Private members.
     private static final String APP_TITLE = "Milk Weight Manager-Ateam 37";
     private Database database;
     private FileManager fileManager;

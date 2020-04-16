@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @author Yifei Miao
@@ -242,8 +244,12 @@ public class Database {
      *
      */
     public List<OneRecord> getAllRecords() {
-	// TODO
-	return new ArrayList<OneRecord>();
+	List<OneRecord> result = new ArrayList<OneRecord>();
+	Set<Entry<String, List<OneRecord>>> keys = this.databaseUsingID.entrySet();
+	for (Entry<String, List<OneRecord>> e : keys) {
+	    result.addAll(e.getValue());
+	}
+	return result;
     }
 
     /*
