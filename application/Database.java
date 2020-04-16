@@ -72,7 +72,7 @@ public class Database {
      *
      */
     public void add(String farmID, int date, int weight) {
-	OneRecord record = new OneRecord(farmID, date, weight);
+	OneRecord record = new OneRecord(farmID.toUpperCase(), date, weight);
 	this.add(record);
     }
 
@@ -83,6 +83,7 @@ public class Database {
      *
      */
     public void add(OneRecord record) {
+	record.setID(record.getID().toUpperCase());
 	if (!this.contains(record.getID())) {
 	    List<OneRecord> tmp = new ArrayList<OneRecord>();
 	    tmp.add(record);
@@ -109,14 +110,14 @@ public class Database {
      * Return true if farmID already exists in the database.
      */
     public boolean contains(String farmID) {
-	return this.databaseUsingID.containsKey(farmID);
+	return this.databaseUsingID.containsKey(farmID.toUpperCase());
     }
 
     /*
      * Return true if record date already exists in the database.
      */
     public boolean containsSameIDAndDate(OneRecord record) {
-	for (OneRecord r : this.databaseUsingID.get(record.getID())) {
+	for (OneRecord r : this.databaseUsingID.get(record.getID().toUpperCase())) {
 	    if (r.getDate() == record.getDate()) {
 		return true;
 	    }
@@ -139,13 +140,13 @@ public class Database {
      *
      */
     public boolean remove(String farmID, int date) {
-	OneRecord tmp = new OneRecord(farmID, date, 0);
+	OneRecord tmp = new OneRecord(farmID.toUpperCase(), date, 0);
 	if (!this.containsSameIDAndDate(tmp)) {
 	    return false;
 	}
-	for (int i = 0; i < this.databaseUsingID.get(farmID).size(); i++) {
-	    if (this.databaseUsingID.get(farmID).get(i).getDate() == date) {
-		this.databaseUsingID.get(farmID).remove(i);
+	for (int i = 0; i < this.databaseUsingID.get(farmID.toUpperCase()).size(); i++) {
+	    if (this.databaseUsingID.get(farmID.toUpperCase()).get(i).getDate() == date) {
+		this.databaseUsingID.get(farmID.toUpperCase()).remove(i);
 		break;
 	    }
 	}
