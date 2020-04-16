@@ -16,6 +16,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -41,21 +42,27 @@ public class GUI extends Application {
     private static final int CENTERBOX_WIDTH = 650;
     private static final int SEARCHBARBUTTON_WIDTH = 75;
     private static final int RIGHTBOX_WIDTH = 150;
+    private static final int ADDWIDOW_WIDTH = 250;
+    private static final int ERRORWIDOW_WIDTH = 250;
     // Heights.
     private static final int WINDOW_HEIGHT = 500;
     private static final int PROGRESSBAR_Height = 30;
     private static final int TOPBOX_HEIGHT = 50;
     private static final int CENTERBOX_HEIGHT = 350;
     private static final int BUTTOMBOX_HEIGHT = 70;
+    private static final int ADDWIDOW_HEIGHT = 150;
+    private static final int ERRORWIDOW_HEIGHT = 150;
     // Private members.
     private static final String APP_TITLE = "Milk Weight Manager-Ateam 37";
     private Database database;
     private FileManager fileManager;
     private FileOutputer fileOutputer;
+    private ObservableList<OneRecord> tableList;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
 	this.database = new Database();
+	this.tableList = FXCollections.observableArrayList();
 	this.fileManager = new FileManager(this.database);
 	this.fileOutputer = new FileOutputer(this.database);
 	this.FileManagerScene(primaryStage);
@@ -85,10 +92,10 @@ public class GUI extends Application {
 	// SearchBar HBox.
 	HBox searchBarHBox = new HBox();
 	// Text field for file addresses.
-	TextField textfield = new TextField();
-	textfield.setPromptText("Enter or Choose files...");
-	textfield.setMinWidth(CENTERBOX_WIDTH - 3 * SEARCHBARBUTTON_WIDTH);
-	textfield.setEditable(false);
+	TextField searchBoxTextField = new TextField();
+	searchBoxTextField.setPromptText("Use \"Choose\" button to select files from the system...");
+	searchBoxTextField.setMinWidth(CENTERBOX_WIDTH - 3 * SEARCHBARBUTTON_WIDTH);
+	searchBoxTextField.setEditable(false);
 	// FileChooser.
 	FileChooser fileChooser = new FileChooser();
 	fileChooser.setTitle("Choose files to open");
@@ -101,28 +108,28 @@ public class GUI extends Application {
 	Button fileOpenBtn = new Button("Open");
 	fileOpenBtn.setMinWidth(SEARCHBARBUTTON_WIDTH);
 	// Add components to SearchBar.
-	searchBarHBox.getChildren().addAll(textfield, fileChooserBtn, fileClearBtn, fileOpenBtn);
+	searchBarHBox.getChildren().addAll(searchBoxTextField, fileChooserBtn, fileClearBtn, fileOpenBtn);
 	// TableView.
-	ObservableList<OneRecord> tableData = FXCollections.observableArrayList();
-	TableView<OneRecord> table = new TableView<>();
-	table.setMinWidth(CENTERBOX_WIDTH);
-	table.setMinHeight(CENTERBOX_HEIGHT - 50);
+	TableView<OneRecord> tableView = new TableView<>();
+	tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+	tableView.setMinWidth(CENTERBOX_WIDTH);
+	tableView.setMinHeight(CENTERBOX_HEIGHT - 50);
 	TableColumn<OneRecord, String> nameCol = new TableColumn<>("Farm ID");
-	nameCol.setMinWidth(100);
+	nameCol.setMinWidth(200);
 	nameCol.setCellValueFactory(new PropertyValueFactory<>("farmID"));
 
-	TableColumn<OneRecord, String> dateCol = new TableColumn<>("Date");
-	dateCol.setMinWidth(100);
+	TableColumn<OneRecord, Integer> dateCol = new TableColumn<>("Date");
+	dateCol.setMinWidth(200);
 	dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
 
-	TableColumn<OneRecord, String> weightCol = new TableColumn<>("Weight");
+	TableColumn<OneRecord, Integer> weightCol = new TableColumn<>("Weight");
 	weightCol.setMinWidth(200);
 	weightCol.setCellValueFactory(new PropertyValueFactory<>("weight"));
 
-	table.setItems(tableData);
-	table.getColumns().addAll(nameCol, dateCol, weightCol);
+	tableView.setItems(this.tableList);
+	tableView.getColumns().addAll(nameCol, dateCol, weightCol);
 	// Add SearchBar and table to centerVBox.
-	centerVBox.getChildren().addAll(searchBarHBox, table);
+	centerVBox.getChildren().addAll(searchBarHBox, tableView);
 	centerVBox.setMinWidth(CENTERBOX_WIDTH);
 	// Add centerVBox to the pane.
 	pane.setCenter(centerVBox);
@@ -139,7 +146,10 @@ public class GUI extends Application {
 	Button deleteButton = new Button("Delete");
 	deleteButton.setMinHeight(30);
 	deleteButton.setMinWidth(100);
-	rightVBox.getChildren().addAll(rightTopSpace, addBtn, deleteButton);
+	Button deleteAllButton = new Button("Delete All");
+	deleteAllButton.setMinHeight(30);
+	deleteAllButton.setMinWidth(100);
+	rightVBox.getChildren().addAll(rightTopSpace, addBtn, deleteButton, deleteAllButton);
 	// Add rightVBox to the pane.
 	pane.setRight(rightVBox);
 
@@ -190,23 +200,43 @@ public class GUI extends Application {
 		    text += files.get(i).getName() + ",";
 		}
 		text += files.get(files.size() - 1).getName().toString();
-		textfield.setText(text);
+		searchBoxTextField.setText(text);
 	    }
 	});
 	// Clear button.
 	fileClearBtn.setOnAction(event -> {
 	    files.clear();
-	    textfield.clear();
+	    searchBoxTextField.clear();
 	});
 	// Open button.
 	fileOpenBtn.setOnAction(event -> {
 	    if (files.size() > 0) {
-		textfield.clear();
+		searchBoxTextField.clear();
 		List<File> errorFiles = this.fileManager.addFiles(files);
-		System.out.println(errorFiles.toString());
+		this.refreshTable();
 	    }
 	});
-	// Exit Button
+	// Add button.
+	// Delete button.
+	deleteButton.setOnAction(event -> {
+	    ObservableList<Integer> list = tableView.getSelectionModel().getSelectedIndices();
+	    ObservableList<OneRecord> tmp = FXCollections.observableArrayList();
+	    for (Integer e : list) {
+		this.database.remove(this.tableList.get(e).getFarmID(), this.tableList.get(e).getDate());
+		tmp.add(this.tableList.get(e));
+	    }
+	    for (OneRecord e : tmp) {
+		this.tableList.remove(e);
+	    }
+	});
+	// DeleteAll button.
+	deleteAllButton.setOnAction(event -> {
+	    files.clear();
+	    searchBoxTextField.clear();
+	    this.database.clear();
+	    this.refreshTable();
+	});
+	// Exit Button.
 	exitBtn.setOnAction((ActionEvent e) -> {
 	    primaryStage.close();
 	    System.exit(0);
@@ -215,6 +245,14 @@ public class GUI extends Application {
 	nextBtn.setOnAction((ActionEvent e) -> {
 	    this.DataDisplayScene(primaryStage);
 	});
+
+    }
+
+    private void refreshTable() {
+	this.tableList.clear();
+	for (OneRecord e : this.database.getAllRecords()) {
+	    this.tableList.add(new OneRecord(e.getFarmID(), e.getDate(), e.getWeight()));
+	}
     }
 
     private void DataDisplayScene(Stage primaryStage) {
@@ -227,6 +265,11 @@ public class GUI extends Application {
     }
 
     private boolean addBtnWindow() {
+
+	return false;
+    }
+
+    private boolean errorWindow() {
 
 	return false;
     }

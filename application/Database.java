@@ -75,19 +75,19 @@ public class Database {
      *
      */
     public void add(OneRecord record) {
-	if (!this.databaseUsingID.containsKey(record.getID().toUpperCase())) {
-	    this.databaseUsingID.put(record.getID(), new ArrayList<OneRecord>());
+	if (!this.databaseUsingID.containsKey(record.getFarmID().toUpperCase())) {
+	    this.databaseUsingID.put(record.getFarmID(), new ArrayList<OneRecord>());
 	}
 	if (!this.databaseUsingMonth.containsKey(record.getDate() / 100)) {
 	    this.databaseUsingMonth.put(record.getDate() / 100, new ArrayList<OneRecord>());
 	}
-	for (OneRecord r : this.databaseUsingID.get(record.getID().toUpperCase())) {
+	for (OneRecord r : this.databaseUsingID.get(record.getFarmID().toUpperCase())) {
 	    if (r.getDate() == record.getDate()) {
 		r.setWeight(r.getWeight() + record.getWeight());
 		return;
 	    }
 	}
-	this.databaseUsingID.get(record.getID()).add(record);
+	this.databaseUsingID.get(record.getFarmID()).add(record);
 	this.databaseUsingMonth.get(record.getDate() / 100).add(record);
 	this.size++;
     }
@@ -107,24 +107,8 @@ public class Database {
      *
      */
     public boolean remove(String farmID, int date) {
-	OneRecord tmp = new OneRecord(farmID.toUpperCase(), date, 0);
-	if (!this.databaseUsingID.containsKey(tmp.getID().toUpperCase())) {
-	    return false;
-	}
-	for (int i = 0; i < this.databaseUsingID.get(farmID.toUpperCase()).size(); i++) {
-	    if (this.databaseUsingID.get(farmID.toUpperCase()).get(i).getDate() == date) {
-		this.databaseUsingID.get(farmID.toUpperCase()).remove(i);
-		break;
-	    }
-	}
-	for (int i = 0; i < this.databaseUsingMonth.get(date / 100).size(); i++) {
-	    if (this.databaseUsingMonth.get(date / 100).get(i).getDate() == date) {
-		this.databaseUsingMonth.get(date / 100).remove(i);
-		break;
-	    }
-	}
-	this.size--;
-	return true;
+	OneRecord record = new OneRecord(farmID.toUpperCase(), date, 0);
+	return this.remove(record);
     }
 
     /*
@@ -142,18 +126,29 @@ public class Database {
      *
      */
     public boolean remove(OneRecord record) {
-	record.setID(record.getID().toUpperCase());
-	if (!this.databaseUsingID.containsKey(record.getID())) {
+	record.setFarmID(record.getFarmID().toUpperCase());
+	if (!this.databaseUsingID.containsKey(record.getFarmID())) {
 	    return false;
+	} else {
+	    boolean exist = true;
+	    for (OneRecord e : this.databaseUsingID.get(record.getFarmID())) {
+		if (e.getDate() == record.getDate()) {
+		    exist = true;
+		}
+	    }
+	    if (!exist) {
+		return false;
+	    }
 	}
-	for (int i = 0; i < this.databaseUsingID.get(record.getID()).size(); i++) {
-	    if (this.databaseUsingID.get(record.getID()).get(i).getDate() == record.getDate()) {
-		this.databaseUsingID.get(record.getID()).remove(i);
+	for (int i = 0; i < this.databaseUsingID.get(record.getFarmID()).size(); i++) {
+	    if (this.databaseUsingID.get(record.getFarmID()).get(i).getDate() == record.getDate()) {
+		this.databaseUsingID.get(record.getFarmID()).remove(i);
 		break;
 	    }
 	}
 	for (int i = 0; i < this.databaseUsingMonth.get(record.getDate() / 100).size(); i++) {
-	    if (this.databaseUsingMonth.get(record.getDate() / 100).get(i).getID() == record.getID().toUpperCase()) {
+	    if (this.databaseUsingMonth.get(record.getDate() / 100).get(i).getFarmID() == record.getFarmID()
+		    .toUpperCase()) {
 		this.databaseUsingMonth.get(record.getDate() / 100).remove(i);
 		break;
 	    }

@@ -30,7 +30,6 @@ public class FileManager {
      * not be added to the database.
      */
     public List<File> addFiles(List<File> files) {
-	System.out.println("Processing...");
 	// List of files with error.
 	List<File> errorFiles = new ArrayList<>();
 	// Iterator.
@@ -81,7 +80,6 @@ public class FileManager {
 			this.databse.add(record);
 		    }
 		}
-		System.out.println(this.databse.size());
 		scanner.close();
 	    } catch (FileNotFoundException e) {
 		errorFiles.add(file);
@@ -132,7 +130,7 @@ public class FileManager {
      * Check data extracted from a line is valid.
      */
     public boolean checkData(String[] data) {
-	OneRecord record = new OneRecord("", 0, 0);
+	OneRecord record = new OneRecord("x", 0, 0);
 
 	// Check 3 parts exist.
 	if (data.length != 3) {
@@ -158,7 +156,7 @@ public class FileManager {
 	    }
 	}
 	// Set ID.
-	record.setID(data[1].toUpperCase());
+	record.setFarmID(data[1].toUpperCase());
 	// Set Weight.
 	if (this.isDigit(data[2])) {
 	    record.setWeight(Integer.parseInt(data[2]));
@@ -173,7 +171,7 @@ public class FileManager {
      */
     public boolean checkRecordValid(OneRecord record) {
 	// Check ID.
-	if (record.getID() == null || record.getID().equals("")) {
+	if (record.getFarmID() == null || record.getFarmID().equals("")) {
 	    return false;
 	}
 	// Check Date.

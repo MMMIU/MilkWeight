@@ -3,6 +3,9 @@
  */
 package application;
 
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+
 /**
  * @author Yifei Miao
  *
@@ -10,37 +13,37 @@ package application;
  */
 public class OneRecord {
 
-    private String farmID;
-    private int date;
-    private int weight;
+    private SimpleStringProperty farmID;
+    private SimpleIntegerProperty date;
+    private SimpleIntegerProperty weight;
 
     public OneRecord(String farmID, int date, int weight) {
-        this.farmID = farmID;
-        this.date = date;
-        this.weight = weight;
+	this.farmID = new SimpleStringProperty(farmID);
+	this.date = new SimpleIntegerProperty(date);
+	this.weight = new SimpleIntegerProperty(weight);
     }
 
-    public void setID(String newFarmID) {
-        this.farmID = newFarmID;
+    public void setFarmID(String FarmID) {
+	this.farmID.set(FarmID);
     }
 
-    public void setDate(int newDate) {
-        this.date = newDate;
+    public void setDate(int date) {
+	this.date.set(date);
     }
 
-    public void setWeight(int newWeight) {
-        this.weight = newWeight;
+    public void setWeight(int weight) {
+	this.weight.set(weight);
     }
 
-    public String getID() {
-        return this.farmID;
+    public String getFarmID() {
+	return this.farmID.get();
     }
 
     public int getDate() {
-        return this.date;
+	return this.date.get();
     }
 
     public int getWeight() {
-        return this.weight;
+	return this.weight.get();
     }
 }
