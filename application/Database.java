@@ -237,6 +237,26 @@ public class Database {
     }
 
     /*
+     * Return a list of all records. If data does not exist,
+     * return an empty list. Return empty list if no record.
+     *
+     */
+    public List<OneRecord> getAllRecords() {
+	// TODO
+	return new ArrayList<OneRecord>();
+    }
+
+    /*
+     * Return a sorted list of all records. If data does not exist,
+     * return an empty list. Return empty list if no record.
+     *
+     */
+    public List<OneRecord> getAllRecords(int order) {
+	// TODO
+	return null;
+    }
+
+    /*
      * Return a list of all records in a month. If data does not exist,
      * return an empty list. Return empty list if no record.
      *

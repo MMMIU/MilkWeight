@@ -24,24 +24,41 @@ public class FileManager {
 	this.databse = database;
     }
 
+    /*
+     * Add records in multiple files to the database. Return list of files that
+     * cannot be read or some data in them is not valid. Data in error files will
+     * not be added to the database.
+     */
     public List<File> addFiles(List<File> files) {
+	// List of files with error.
 	List<File> errorFiles = new ArrayList<>();
-
+	// Iterator.
 	for (File file : files) {
 	    try {
+		// Scanner.
 		Scanner scanner = new Scanner(file);
 		boolean valid = true;
+		// Ignore first title line.
+		if (scanner.hasNextLine()) {
+		    scanner.nextLine();
+		}
+		// Temporary list to store records in a file.
 		List<OneRecord> records = new ArrayList<>();
 		while (scanner.hasNextLine()) {
+		    // Get a line.
 		    String line = scanner.nextLine().trim();
+		    // Get data parts in the line.
 		    String[] data = line.split(",");
+		    // Check data.
 		    if (!this.checkData(data)) {
 			errorFiles.add(file);
 			valid = false;
 			break;
 		    } else {
+			// Create a record.
 			OneRecord record = new OneRecord(data[1].trim().toUpperCase(), 0,
 				Integer.parseInt(data[2].trim()));
+			// Add date in suitable format to the record.
 			String date = data[0];
 			if (this.isDigit(date)) {
 			    record.setDate(Integer.parseInt(date));
@@ -49,9 +66,11 @@ public class FileManager {
 			    String[] dateParts = data[0].trim().split("-");
 			    record.setDate(Integer.parseInt(dateParts[0] + dateParts[1] + dateParts[2]));
 			}
+			// Add the record to the temporary list
 			records.add(record);
 		    }
 		}
+		// If no error in the file, add records to database.
 		if (valid) {
 		    for (OneRecord record : records) {
 			this.databse.add(record);
@@ -115,13 +134,16 @@ public class FileManager {
 	}
 	// Check date.
 	String date = data[0];
+	// Check date is in Integer format.
 	if (this.isDigit(date)) {
 	    record.setDate(Integer.parseInt(date));
 	} else {
+	    // Check 3 parts exist.
 	    String[] dateParts = data[0].trim().split("-");
 	    if (dateParts.length != 3) {
 		return false;
 	    }
+	    // Check 3 parts are all digit and add date to the temporary record.
 	    if (this.isDigit(dateParts[0]) && this.isDigit(dateParts[1]) && this.isDigit(dateParts[2])) {
 		record.setDate(Integer.parseInt(dateParts[0] + dateParts[1] + dateParts[2]));
 	    } else {
@@ -151,23 +173,27 @@ public class FileManager {
 	if (record.getDate() < 0) {
 	    return false;
 	}
+	// Get year, month, and day.
 	int year = record.getDate() / 10000;
 	int month = (record.getDate() % 10000) / 100;
 	int day = record.getDate() % 100;
 	if (year < 1 || month < 1 || month > 12 || day < 1 || day > 31) {
 	    return false;
 	}
-	int Feburary = 28;
+	// Check leap year.
+	int February = 28;
 	if ((year / 4 == 0 && year / 100 != 0) || (year / 100 == 0 && year / 400 == 0)) {
-	    Feburary = 29;
+	    February = 29;
 	}
+	// Check month.
 	if (month == 4 || month == 6 || month == 9 || month == 11) {
 	    if (day > 30) {
 		return false;
 	    }
 	}
+	// Check February.
 	if (month == 2) {
-	    if (day > Feburary) {
+	    if (day > February) {
 		return false;
 	    }
 	}
