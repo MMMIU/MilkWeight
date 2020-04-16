@@ -30,6 +30,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -63,6 +65,7 @@ public class GUI extends Application {
     private FileManager fileManager;
     private FileOutputer fileOutputer;
     private ObservableList<OneRecord> tableList;
+    private Label count;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -87,7 +90,16 @@ public class GUI extends Application {
 
 	// Left VBox
 	VBox leftVBox = new VBox();
+	leftVBox.setAlignment(Pos.CENTER);
 	leftVBox.setMinWidth(LEFTBOX_WIDTH);
+	this.count=new Label("Total:\n0");
+	this.count.setMinSize(80, 80);
+	this.count.setBackground(new Background(new BackgroundFill(Color.DARKGRAY, null, null)));
+	this.count.setTextFill(Color.WHITE);
+	this.count.setFont(new Font("Arial", 15));
+	this.count.setTextAlignment(TextAlignment.CENTER);
+	this.count.setAlignment(Pos.CENTER);
+	leftVBox.getChildren().add(count);
 	pane.setLeft(leftVBox);
 
 	// Center VBox.
@@ -225,6 +237,7 @@ public class GUI extends Application {
 	    if (files.size() > 0) {
 		searchBoxTextField.clear();
 		List<File> errorFiles = this.fileManager.addFiles(files);
+		count.setText("Total:\n"+this.database.size());
 		this.refreshTable();
 		if (errorFiles.size() > 0) {
 		    String errorText = "";
@@ -233,6 +246,7 @@ public class GUI extends Application {
 		    }
 		    this.errorWindow("Error Reading from " + errorFiles.size() + " file(s): " + errorText);
 		}
+		files.clear();
 	    }
 	});
 	// Add button.
@@ -250,6 +264,7 @@ public class GUI extends Application {
 	    for (OneRecord e : tmp) {
 		this.tableList.remove(e);
 	    }
+	    count.setText("Total:\n"+this.database.size());
 	});
 	// DeleteAll button.
 	deleteAllButton.setOnAction(event -> {
@@ -257,6 +272,7 @@ public class GUI extends Application {
 	    searchBoxTextField.clear();
 	    this.database.clear();
 	    this.refreshTable();
+	    count.setText("Total:\n0");
 	});
 	// Exit Button.
 	exitBtn.setOnAction((ActionEvent e) -> {
@@ -338,6 +354,7 @@ public class GUI extends Application {
 	    } else {
 		this.errorWindow("Incorrect format of data, please check.");
 	    }
+	    this.count.setText("Total:\n"+this.database.size());
 	});
 	// Cancel button operation.
 	cancelBtn.setOnAction((ActionEvent e) -> {
