@@ -30,6 +30,7 @@ public class FileManager {
      * not be added to the database.
      */
     public List<File> addFiles(List<File> files) {
+	System.out.println("Processing...");
 	// List of files with error.
 	List<File> errorFiles = new ArrayList<>();
 	// Iterator.
@@ -47,6 +48,9 @@ public class FileManager {
 		while (scanner.hasNextLine()) {
 		    // Get a line.
 		    String line = scanner.nextLine().trim();
+		    if (line.equals("")) {
+			continue;
+		    }
 		    // Get data parts in the line.
 		    String[] data = line.split(",");
 		    // Check data.
@@ -64,7 +68,8 @@ public class FileManager {
 			    record.setDate(Integer.parseInt(date));
 			} else {
 			    String[] dateParts = data[0].trim().split("-");
-			    record.setDate(Integer.parseInt(dateParts[0] + dateParts[1] + dateParts[2]));
+			    record.setDate(Integer.parseInt(dateParts[0]) * 10000 + Integer.parseInt(dateParts[1]) * 100
+				    + Integer.parseInt(dateParts[2]));
 			}
 			// Add the record to the temporary list
 			records.add(record);
@@ -76,6 +81,7 @@ public class FileManager {
 			this.databse.add(record);
 		    }
 		}
+		System.out.println(this.databse.size());
 		scanner.close();
 	    } catch (FileNotFoundException e) {
 		errorFiles.add(file);
@@ -145,7 +151,8 @@ public class FileManager {
 	    }
 	    // Check 3 parts are all digit and add date to the temporary record.
 	    if (this.isDigit(dateParts[0]) && this.isDigit(dateParts[1]) && this.isDigit(dateParts[2])) {
-		record.setDate(Integer.parseInt(dateParts[0] + dateParts[1] + dateParts[2]));
+		record.setDate(Integer.parseInt(dateParts[0]) * 10000 + Integer.parseInt(dateParts[1]) * 100
+			+ Integer.parseInt(dateParts[2]));
 	    } else {
 		return false;
 	    }

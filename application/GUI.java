@@ -103,7 +103,7 @@ public class GUI extends Application {
 	// Add components to SearchBar.
 	searchBarHBox.getChildren().addAll(textfield, fileChooserBtn, fileClearBtn, fileOpenBtn);
 	// TableView.
-	ObservableList<OneRecord> tableData = FXCollections.observableArrayList(this.database.getAllRecords());
+	ObservableList<OneRecord> tableData = FXCollections.observableArrayList();
 	TableView<OneRecord> table = new TableView<>();
 	table.setMinWidth(CENTERBOX_WIDTH);
 	table.setMinHeight(CENTERBOX_HEIGHT - 50);
@@ -111,11 +111,11 @@ public class GUI extends Application {
 	nameCol.setMinWidth(100);
 	nameCol.setCellValueFactory(new PropertyValueFactory<>("farmID"));
 
-	TableColumn<OneRecord, Integer> dateCol = new TableColumn<>("Date");
+	TableColumn<OneRecord, String> dateCol = new TableColumn<>("Date");
 	dateCol.setMinWidth(100);
 	dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
 
-	TableColumn<OneRecord, Integer> weightCol = new TableColumn<>("Weight");
+	TableColumn<OneRecord, String> weightCol = new TableColumn<>("Weight");
 	weightCol.setMinWidth(200);
 	weightCol.setCellValueFactory(new PropertyValueFactory<>("weight"));
 
@@ -193,9 +193,17 @@ public class GUI extends Application {
 		textfield.setText(text);
 	    }
 	});
+	// Clear button.
+	fileClearBtn.setOnAction(event -> {
+	    files.clear();
+	    textfield.clear();
+	});
+	// Open button.
 	fileOpenBtn.setOnAction(event -> {
 	    if (files.size() > 0) {
 		textfield.clear();
+		List<File> errorFiles = this.fileManager.addFiles(files);
+		System.out.println(errorFiles.toString());
 	    }
 	});
 	// Exit Button

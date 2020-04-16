@@ -37,29 +37,11 @@ public class Database {
     public static final int DATELARGETOSMALL = 4;// Date, large to small
     public static final int WEIGHTSMALLTOLARGE = 5;// Weight, small to large.
     public static final int WEIGHTLARGETOSMALL = 6;// Weight, large to small
+
     // Private members.
     private Map<String, List<OneRecord>> databaseUsingID;
     private Map<Integer, List<OneRecord>> databaseUsingMonth;
     private int size;
-
-    // Private class.
-    private class Pair {
-	private int month;
-	private int weight;
-
-	public Pair(int month, int weight) {
-	    this.month = month;
-	    this.weight = weight;
-	}
-
-	public int getMonth() {
-	    return this.month;
-	}
-
-	public int getWeight() {
-	    return this.weight;
-	}
-    }
 
     // No-argument constructor.
     public Database() {
@@ -93,46 +75,21 @@ public class Database {
      *
      */
     public void add(OneRecord record) {
-	record.setID(record.getID().toUpperCase());
-	if (!this.contains(record.getID())) {
-	    List<OneRecord> tmp = new ArrayList<OneRecord>();
-	    tmp.add(record);
-	    this.databaseUsingID.put(record.getID(), tmp);
-	    this.databaseUsingMonth.put(record.getDate() / 100, tmp);
-	} else {
-	    if (this.containsSameIDAndDate(record)) {
-		List<OneRecord> tmp = this.databaseUsingID.get(record.getID());
-		for (OneRecord e : tmp) {
-		    if (e.getDate() == record.getDate()) {
-			e.setWeight(e.getWeight() + record.getWeight());
-			break;
-		    }
-		}
-	    } else {
-		this.databaseUsingID.get(record.getID()).add(record);
-		this.databaseUsingMonth.get(record.getDate() / 100).add(record);
-		this.size++;
-	    }
+	if (!this.databaseUsingID.containsKey(record.getID().toUpperCase())) {
+	    this.databaseUsingID.put(record.getID(), new ArrayList<OneRecord>());
 	}
-    }
-
-    /*
-     * Return true if farmID already exists in the database.
-     */
-    public boolean contains(String farmID) {
-	return this.databaseUsingID.containsKey(farmID.toUpperCase());
-    }
-
-    /*
-     * Return true if record date already exists in the database.
-     */
-    public boolean containsSameIDAndDate(OneRecord record) {
+	if (!this.databaseUsingMonth.containsKey(record.getDate() / 100)) {
+	    this.databaseUsingMonth.put(record.getDate() / 100, new ArrayList<OneRecord>());
+	}
 	for (OneRecord r : this.databaseUsingID.get(record.getID().toUpperCase())) {
 	    if (r.getDate() == record.getDate()) {
-		return true;
+		r.setWeight(r.getWeight() + record.getWeight());
+		return;
 	    }
 	}
-	return false;
+	this.databaseUsingID.get(record.getID()).add(record);
+	this.databaseUsingMonth.get(record.getDate() / 100).add(record);
+	this.size++;
     }
 
     /*
@@ -151,7 +108,7 @@ public class Database {
      */
     public boolean remove(String farmID, int date) {
 	OneRecord tmp = new OneRecord(farmID.toUpperCase(), date, 0);
-	if (!this.containsSameIDAndDate(tmp)) {
+	if (!this.databaseUsingID.containsKey(tmp.getID().toUpperCase())) {
 	    return false;
 	}
 	for (int i = 0; i < this.databaseUsingID.get(farmID.toUpperCase()).size(); i++) {
@@ -186,7 +143,7 @@ public class Database {
      */
     public boolean remove(OneRecord record) {
 	record.setID(record.getID().toUpperCase());
-	if (!this.containsSameIDAndDate(record)) {
+	if (!this.databaseUsingID.containsKey(record.getID())) {
 	    return false;
 	}
 	for (int i = 0; i < this.databaseUsingID.get(record.getID()).size(); i++) {
@@ -366,19 +323,19 @@ public class Database {
 
     /*
      * Return smallest weight of all months in a year. Return (0,0) if no record in
-     * that year.
+     * that year. Format:("",202004,10000).
      *
      */
-    public Pair getMonthlyMinOfAYear(int year) {
+    public OneRecord getMonthlyMinOfAYear(int year) {
 	return null;
     }
 
     /*
      * Return largest weight of all months in a year. Return (0,0) if no record in
-     * that year.
+     * that year. Format:("",202004,10000).
      *
      */
-    public Pair getMonthlyMaxOfAYear(int year) {
+    public OneRecord getMonthlyMaxOfAYear(int year) {
 	return null;
     }
 
@@ -439,7 +396,7 @@ public class Database {
      * Return the size of the database.
      */
     public int size() {
-	return this.size();
+	return this.size;
     }
 
     /*
