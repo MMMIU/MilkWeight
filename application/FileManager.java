@@ -38,7 +38,16 @@ public class FileManager {
 			valid = false;
 			break;
 		    } else {
-
+			OneRecord record = new OneRecord(data[1].trim().toUpperCase(), 0,
+				Integer.parseInt(data[2].trim()));
+			String date = data[0];
+			if (this.isDigit(date)) {
+			    record.setDate(Integer.parseInt(date));
+			} else {
+			    String[] dateParts = data[0].trim().split("-");
+			    record.setDate(Integer.parseInt(dateParts[0] + dateParts[1] + dateParts[2]));
+			}
+			records.add(record);
 		    }
 		}
 		if (valid) {
@@ -46,11 +55,30 @@ public class FileManager {
 			this.databse.add(record);
 		    }
 		}
+		scanner.close();
 	    } catch (FileNotFoundException e) {
 		errorFiles.add(file);
 	    }
 	}
 	return errorFiles;
+    }
+
+    public boolean addARecord(String farmID, int date, int weight) {
+	OneRecord record = new OneRecord(farmID.toUpperCase(), date, weight);
+	return this.addARecord(record);
+    }
+
+    public boolean addARecord(OneRecord record) {
+	if (!this.checkRecordValid(record)) {
+	    return false;
+	}
+	this.databse.add(record);
+	return false;
+    }
+
+    public boolean deleteARecord(String farmID, int date, int weight) {
+
+	return false;
     }
 
     public boolean checkData(String[] data) {
@@ -69,9 +97,6 @@ public class FileManager {
 	    if (dateParts.length != 3) {
 		return false;
 	    }
-	    dateParts[0] = dateParts[0].trim();
-	    dateParts[1] = dateParts[1].trim();
-	    dateParts[2] = dateParts[2].trim();
 	    if (this.isDigit(dateParts[0]) && this.isDigit(dateParts[1]) && this.isDigit(dateParts[2])) {
 		record.setDate(Integer.parseInt(dateParts[0] + dateParts[1] + dateParts[2]));
 	    } else {

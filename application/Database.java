@@ -42,12 +42,20 @@ public class Database {
 
     // Private class.
     private class Pair {
-	int month;
-	int weight;
+	private int month;
+	private int weight;
 
 	public Pair(int month, int weight) {
 	    this.month = month;
 	    this.weight = weight;
+	}
+
+	public int getMonth() {
+	    return this.month;
+	}
+
+	public int getWeight() {
+	    return this.weight;
 	}
     }
 
@@ -150,9 +158,44 @@ public class Database {
 		break;
 	    }
 	}
-	for (int i = 0; i < this.databaseUsingMonth.get(date).size(); i++) {
-	    if (this.databaseUsingMonth.get(date).get(i).getDate() == date) {
-		this.databaseUsingMonth.get(date).remove(i);
+	for (int i = 0; i < this.databaseUsingMonth.get(date / 100).size(); i++) {
+	    if (this.databaseUsingMonth.get(date / 100).get(i).getDate() == date) {
+		this.databaseUsingMonth.get(date / 100).remove(i);
+		break;
+	    }
+	}
+	this.size--;
+	return true;
+    }
+
+    /*
+     * Remove a record in the database.
+     *
+     * @param farmID
+     * Name of the farm.
+     *
+     * @param date
+     * Date of the record.
+     *
+     * @returns
+     * True if the record is successfully inserted into the database.
+     * False otherwise.
+     *
+     */
+    public boolean remove(OneRecord record) {
+	record.setID(record.getID().toUpperCase());
+	if (!this.containsSameIDAndDate(record)) {
+	    return false;
+	}
+	for (int i = 0; i < this.databaseUsingID.get(record.getID()).size(); i++) {
+	    if (this.databaseUsingID.get(record.getID()).get(i).getDate() == record.getDate()) {
+		this.databaseUsingID.get(record.getID()).remove(i);
+		break;
+	    }
+	}
+	for (int i = 0; i < this.databaseUsingMonth.get(record.getDate() / 100).size(); i++) {
+	    if (this.databaseUsingMonth.get(record.getDate() / 100).get(i).getID() == record.getID().toUpperCase()) {
+		this.databaseUsingMonth.get(record.getDate() / 100).remove(i);
 		break;
 	    }
 	}
