@@ -158,7 +158,7 @@ public class GUI extends Application {
 	VBox rightTopSpace = new VBox();
 	rightTopSpace.setMinHeight(100);
 	rightTopSpace.setMinWidth(100);
-	rightTopSpace.setAlignment(Pos.CENTER);
+	rightTopSpace.setAlignment(Pos.TOP_CENTER);
 	Image image = new Image("file:images/Rin.jpg");
 	ImageView imageView = new ImageView(image);
 	rightTopSpace.getChildren().addAll(imageView);
