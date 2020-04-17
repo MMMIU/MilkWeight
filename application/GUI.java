@@ -362,33 +362,37 @@ public class GUI extends Application {
 	});
     }
 
+    private void popUpWindow(String title,String message) {
+    	VBox vBox = new VBox(20);
+    	vBox.setAlignment(Pos.TOP_CENTER);
+    	// Top space.
+    	VBox top = new VBox();
+    	top.setMinHeight(ERRORWIDOW_HEIGHT / 6);
+    	// Message label.
+    	Label center = new Label(message);
+    	center.setMinHeight(ERRORWIDOW_HEIGHT / 3);
+    	center.setMinWidth(ERRORWIDOW_WIDTH);
+    	center.setAlignment(Pos.CENTER);
+    	// OK button.
+    	Button okBtn = new Button("OK");
+    	okBtn.setAlignment(Pos.CENTER);
+    	okBtn.setMinWidth(75);
+    	vBox.getChildren().addAll(top, center, okBtn);
+    	// Add to scene and stage.
+    	Stage errorWindowStage = new Stage();
+    	Scene mainScene = new Scene(vBox, ERRORWIDOW_WIDTH, ERRORWIDOW_HEIGHT);
+    	errorWindowStage.initModality(Modality.APPLICATION_MODAL);
+    	errorWindowStage.setScene(mainScene);
+    	errorWindowStage.setTitle(title);
+    	errorWindowStage.show();
+    	// Return button operation.
+    	okBtn.setOnAction((ActionEvent e) -> {
+    	    errorWindowStage.close();
+    	});
+    }
     private void errorWindow(String message) {
-	VBox vBox = new VBox(20);
-	vBox.setAlignment(Pos.TOP_CENTER);
-	// Top space.
-	VBox top = new VBox();
-	top.setMinHeight(ERRORWIDOW_HEIGHT / 6);
-	// Message label.
-	Label center = new Label(message);
-	center.setMinHeight(ERRORWIDOW_HEIGHT / 3);
-	center.setMinWidth(ERRORWIDOW_WIDTH);
-	center.setAlignment(Pos.CENTER);
-	// OK button.
-	Button okBtn = new Button("OK");
-	okBtn.setAlignment(Pos.CENTER);
-	okBtn.setMinWidth(75);
-	vBox.getChildren().addAll(top, center, okBtn);
-	// Add to scene and stage.
-	Stage errorWindowStage = new Stage();
-	Scene mainScene = new Scene(vBox, ERRORWIDOW_WIDTH, ERRORWIDOW_HEIGHT);
-	errorWindowStage.initModality(Modality.APPLICATION_MODAL);
-	errorWindowStage.setScene(mainScene);
-	errorWindowStage.setTitle(ERROR_TITLE);
-	errorWindowStage.show();
-	// Return button operation.
-	okBtn.setOnAction((ActionEvent e) -> {
-	    errorWindowStage.close();
-	});
+    	popUpWindow(ERROR_TITLE, message);
+	
     }
 
     private HBox ProgrressBar(int page) {

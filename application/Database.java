@@ -4,6 +4,7 @@
 package application;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -387,6 +388,31 @@ public class Database {
 	return null;
     }
 
+    /*
+     * Return a list contains all farmIDs in ascending order.
+     */
+    public List<String> getFarmIDList(){
+    	List<String> result=new ArrayList<>();
+    	for(String e:this.databaseUsingID.keySet()) {
+    		result.add(e);
+    	}
+    	Collections.sort(result);
+		return result;
+    	
+    }
+    /*
+     * Return a list contains all farmIDs in ascending order.
+     */
+    public List<Integer> getMonthList(){
+    	List<Integer> result=new ArrayList<>();
+    	for(int e:this.databaseUsingMonth.keySet()) {
+    		result.add(e);
+    	}
+    	Collections.sort(result);
+		return result;
+    	
+    }
+    
     /*
      * Return the size of the database.
      */
