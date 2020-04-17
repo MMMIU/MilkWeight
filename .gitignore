@@ -1,5 +1,5 @@
 *.zip
 /Makefile
 /milkweight
-/manifest.txt
+/MANIFEST.MF
 /push.sh
