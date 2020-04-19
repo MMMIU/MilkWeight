@@ -206,31 +206,11 @@ public class Database {
     }
 
     /*
-     * Return a sorted list of all records. If data does not exist,
-     * return an empty list. Return empty list if no record.
-     *
-     */
-    public List<OneRecord> getAllRecords(int order) {
-	// TODO
-	return null;
-    }
-
-    /*
      * Return a list of all records in a month. If data does not exist,
      * return an empty list. Return empty list if no record.
      *
      */
     public List<OneRecord> getAllRecordsInAMonth(int yearMonth) {
-	// TODO
-	return null;
-    }
-
-    /*
-     * Return a sorted list of all records in a month. If data does not exist,
-     * return an empty list. Return empty list if no record.
-     *
-     */
-    public List<OneRecord> getAllRecordsInAMonth(int yearMonth, int order) {
 	// TODO
 	return null;
     }
@@ -246,31 +226,11 @@ public class Database {
     }
 
     /*
-     * Return a sorted list of all records in a year. If data does not exist,
-     * return an empty list. Return empty list if no record.
-     *
-     */
-    public List<OneRecord> getAllRecordsInAYear(int year, int order) {
-	// TODO
-	return null;
-    }
-
-    /*
      * Return a list of all records in a date range. If data does not exist,
      * return an empty list. Return empty list if no record.
      *
      */
     public List<OneRecord> getAllRecordsInDateRange(int startDate, int endDate) {
-	// TODO
-	return null;
-    }
-
-    /*
-     * Return a sorted list of all records in a date range. If data does not exist,
-     * return an empty list. Return empty list if no record.
-     *
-     */
-    public List<OneRecord> getAllRecordsInDateRange(int startDate, int endDate, int order) {
 	// TODO
 	return null;
     }
@@ -283,29 +243,6 @@ public class Database {
     public List<OneRecord> getAllRecordsOfAFarm(String farmID) {
 	// TODO
 	return null;
-    }
-
-    /*
-     * Return a sorted list of all records of a farm.If farm does not exist, return
-     * an empty list. Return empty list if no record.
-     *
-     */
-    public List<OneRecord> getAllRecordsOfAFarm(String farmID, int order) {
-	// TODO
-	return null;
-    }
-
-    /*
-     * Given a list of records. Sort the list according to specified order
-     * order==1-->farm id small-large
-     * 2-->farm id large-small
-     * 3-->date small-large
-     * 4-->date large-small
-     * 5-->weight small-large
-     * 6-->weight large-small
-     */
-    public void sort(List<OneRecord> list, int order) {
-
     }
 
     /*
