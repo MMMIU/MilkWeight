@@ -165,11 +165,36 @@ public class Database {
      * Name of the farm.
      *
      * @returns
-     * True if the record is successfully inserted into the database.
+     * True if the record is successfully deleted from the database.
      * False otherwise.
      */
     public boolean removeAFarm(String farmID) {
-	return false;
+    	if (!this.databaseUsingID.containsKey(farmID)) {
+    	    return false;
+    	} else {
+    	    boolean exist = true;
+    	    Set<String> keys=this.databaseUsingID.keySet();
+    	    for (String e : keys) {
+    		if (e== farmID) {
+    		    exist = true;
+    		}
+    	    }
+    	    if (!exist) {
+    		return false;
+    	    }
+    	    
+    	}
+    	for (int i = 0; i < this.databaseUsingID.get(farmID).size(); i++) {
+    	    if (this.databaseUsingID.get(farmID).get(i).getFarmID() == farmID) {
+    		this.databaseUsingID.get(farmID).remove(i);
+    		break;
+    	    }
+    	}
+    	
+    	
+    	
+    	this.size--;
+    	return true;
     }
 
     /*
@@ -177,8 +202,10 @@ public class Database {
      *
      */
     public int getWeightForAFarmUsingDate(String farmID, int date) {
-	// TODO
-	return 0;
+    	for(OneRecord e: this.databaseUsingID.get(farmID)) {
+	    	if(e.getDate() == date) return e.getWeight();
+	    }
+    	return 0;
     }
 
     /*
@@ -187,8 +214,11 @@ public class Database {
      *
      */
     public List<Integer> getDateForAFarmUsingWeight(String farmID, int weight) {
-	// TODO
-	return null;
+    	 List<Integer> dateList = new ArrayList<Integer>();
+ 	    for(OneRecord e: this.databaseUsingID.get(farmID)) {
+ 	    	if(e.getWeight() == weight) dateList.add(e.getDate());
+ 	    }
+     	return dateList;
     }
 
     /*
@@ -229,8 +259,16 @@ public class Database {
      *
      */
     public List<OneRecord> getAllRecordsInAYear(int year) {
-	// TODO
-	return null;
+    	List<OneRecord> result = new ArrayList<OneRecord>();
+    	Set<Integer> keys = this.databaseUsingMonth.keySet();
+    	for (int e : keys) {
+    	    if(e/10000==year){
+    	    	for(OneRecord r:this.databaseUsingMonth.get(e)) {
+        			result.add(r);
+        		}
+    	    }
+    	}
+    	    return result;
     }
 
     /*
@@ -239,8 +277,18 @@ public class Database {
      *
      */
     public List<OneRecord> getAllRecordsInDateRange(int startDate, int endDate) {
-	// TODO
-	return null;
+    	List<OneRecord> result = new ArrayList<OneRecord>();
+    	Set<Integer> keys = this.databaseUsingMonth.keySet();
+    	for (int e : keys) {
+    		for(int i=startDate;i<endDate;i++){
+    	    if(e==i/100){
+    	    	for(OneRecord r:this.databaseUsingMonth.get(e)) {
+        			result.add(r);
+        		}
+    	    }
+    		}
+    	}
+    	    return result;
     }
 
     /*
@@ -249,8 +297,16 @@ public class Database {
      *
      */
     public List<OneRecord> getAllRecordsOfAFarm(String farmID) {
-	// TODO
-	return null;
+    	List<OneRecord> result = new ArrayList<OneRecord>();
+    	Set<String> keys = this.databaseUsingID.keySet();
+    	for (String e : keys) {
+    	    if(e==farmID){
+    	    	for(OneRecord r:this.databaseUsingID.get(e)) {
+        			result.add(r);
+        		}
+    	    }
+    	}
+    	    return result;
     }
 
     /*
@@ -259,7 +315,17 @@ public class Database {
      *
      */
     public int getMonthlyAverageOfAYear(int year) {
-	return 0;
+    	int sum = 0;
+    	int numOfData = 0;
+    	for(int i = 1; i < 13; i++) {
+    		for(OneRecord e: this.databaseUsingMonth.get(i)) {
+    			if((int)(e.getDate() / 10000) == year) {
+    				sum += e.getWeight();
+    				numOfData++;
+    			}
+    		}
+    	}
+    	return sum/numOfData;	
     }
 
     /*
@@ -268,7 +334,18 @@ public class Database {
      *
      */
     public OneRecord getMonthlyMinOfAYear(int year) {
-	return null;
+    	OneRecord minMonth = new OneRecord("",0,0);
+    	int sum = 0;
+    	for(int i = 1; i < 13; i++) {
+    		for(OneRecord e: this.databaseUsingMonth.get(i)) {
+    			if((int)(e.getDate() / 10000) == year) sum += e.getWeight();
+    		}
+    		if(sum < minMonth.getWeight()) {
+    			minMonth = new OneRecord("",year*100+i,sum);
+    		}
+    		sum = 0;
+    	}
+    	return minMonth;
     }
 
     /*
@@ -277,7 +354,18 @@ public class Database {
      *
      */
     public OneRecord getMonthlyMaxOfAYear(int year) {
-	return null;
+    	OneRecord maxMonth = new OneRecord("",0,0);
+    	int sum = 0;
+    	for(int i = 1; i < 13; i++) {
+    		for(OneRecord e: this.databaseUsingMonth.get(i)) {
+    			if((int)(e.getDate() / 10000) == year) sum += e.getWeight();
+    		}
+    		if(sum > maxMonth.getWeight()) {
+    			maxMonth = new OneRecord("",year*100+i,sum);
+    		}
+    		sum = 0;
+    	}
+    	return maxMonth;
     }
 
     /*
@@ -285,7 +373,13 @@ public class Database {
      *
      */
     public int getAverageOfAFarm(String farmID) {
-	return 0;
+    	int sum = 0;
+    	int numOfData = 0;
+    	for(OneRecord e: this.databaseUsingID.get(farmID)) {
+	    	sum += e.getWeight();
+	    	numOfData++;
+	    }
+    	return sum/numOfData;
     }
 
     /*
@@ -294,7 +388,11 @@ public class Database {
      *
      */
     public OneRecord getMinOfAFarm(String farmID) {
-	return null;
+    	OneRecord minRecord = new OneRecord("null",0,0);
+    	for(OneRecord e: this.databaseUsingID.get(farmID)) {
+	    	if(e.getWeight() < minRecord.getWeight()) minRecord = e;
+	    }
+    	return minRecord;
     }
 
     /*
@@ -303,15 +401,24 @@ public class Database {
      *
      */
     public OneRecord getMaxOfAFarm(String farmID) {
-	return null;
+    	OneRecord maxRecord = new OneRecord("null",0,0);
+    	for(OneRecord e: this.databaseUsingID.get(farmID)) {
+	    	if(e.getWeight() > maxRecord.getWeight()) maxRecord = e;
+	    }
+    	return maxRecord;
     }
 
     /*
      * Return average weight of all records in a date range.
      *
      */
-    public int getAverageInDateRange(int srartDate, int endDate) {
-	return 0;
+    public int getAverageInDateRange(int startDate, int endDate) {
+    	List<OneRecord> givenRangeRecords = getAllRecordsInDateRange(startDate, endDate);
+    	int sum = 0;
+    	for(OneRecord e: givenRangeRecords) {
+    		sum += e.getWeight();
+    	}
+    	return sum/givenRangeRecords.size();
     }
 
     /*
@@ -320,8 +427,13 @@ public class Database {
      * that year.
      *
      */
-    public OneRecord getMinInDateRange(int srartDate, int endDate) {
-	return null;
+    public OneRecord getMinInDateRange(int startDate, int endDate) {
+    	List<OneRecord> givenRangeRecords = getAllRecordsInDateRange(startDate, endDate);
+    	OneRecord minRecord = new OneRecord("",0,0);
+    	for(OneRecord e: givenRangeRecords) {
+    		if(e.getWeight() < minRecord.getWeight()) minRecord = e; 
+    	}
+    	return minRecord;
     }
 
     /*
@@ -329,8 +441,13 @@ public class Database {
      * ("null","0","0") if no record in that date range.
      *
      */
-    public OneRecord getMaxInDateRange(int srartDate, int endDate) {
-	return null;
+    public OneRecord getMaxInDateRange(int startDate, int endDate) {
+    	List<OneRecord> givenRangeRecords = getAllRecordsInDateRange(startDate, endDate);
+    	OneRecord maxRecord = new OneRecord("",0,0);
+    	for(OneRecord e: givenRangeRecords) {
+    		if(e.getWeight() > maxRecord.getWeight()) maxRecord = e; 
+    	}
+    	return maxRecord;
     }
 
     /*
