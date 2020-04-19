@@ -106,24 +106,26 @@ public class FileOutputer {
     public void monthlyReport(int yearMonth,PrintWriter outFile,int order) {
     	List<OneRecord> aMonth=this.database.getAllRecordsInAMonth(yearMonth);
     	long totalWeight=0;
-    	Map<String, Long> farmWeightMap=new HashMap<>();
+    	List<OneRecord> farms=new ArrayList<OneRecord>();
     	for(OneRecord r:aMonth) {
     		totalWeight+=r.getWeight();
-    		if(farmWeightMap.containsKey(r.getFarmID())) {
-    			farmWeightMap.replace(r.getFarmID(), farmWeightMap.get(r.getFarmID())+r.getWeight());
-    		}else {
-    			farmWeightMap.put(r.getFarmID(),(long)r.getWeight());
+    		boolean exist=false;
+    		for(OneRecord record:farms) {
+    			if(record.getFarmID().equals(r.getFarmID())) {
+    				record.setWeight(record.getWeight()+r.getWeight());
+    				exist=true;
+    				break;
+    			}
+    		}
+    		if(!exist) {
+    			farms.add(r);
     		}
     	}
-//    	List<String>nameList=new ArrayList<String>();
-//    	for(String e:farmWeightMap.keySet()) {
-//    		nameList.add(e);
-//    	}
-//    	Collections.sort(nameList);
+    	this.sort(farms, 5);
     	outFile.println("Monthly report for "+yearMonth*1.0/100);
     	outFile.println("Farm ID, Weight, Percent of total");
-    	for(String e:nameList) {
-    		outFile.println(e+", "+farmWeightMap.get(e)+", "+farmWeightMap.get(e)*100.0/totalWeight);
+    	for(OneRecord r:farms) {
+    		outFile.println(r.getFarmID()+", "+r.getWeight()+", "+r.getWeight()*100.0/totalWeight);
     	}
     }
     
