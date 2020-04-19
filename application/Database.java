@@ -211,8 +211,13 @@ public class Database {
      *
      */
     public List<OneRecord> getAllRecordsInAMonth(int yearMonth) {
-	// TODO
-	return null;
+    	List<OneRecord> result = new ArrayList<OneRecord>();
+    	Set<Entry<Integer, List<OneRecord>>> keys = this.databaseUsingMonth.entrySet();
+    	for (Entry<Integer, List<OneRecord>> e : keys) {
+    	    if((((OneRecord) e.getValue()).getDate()%100)==yearMonth)
+    		result.add((OneRecord) e.getValue());
+    	}
+	return result;
     }
 
     /*
