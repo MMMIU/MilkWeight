@@ -102,6 +102,31 @@ public class FileOutputer {
     	}
     }
     
+    
+    public void monthlyReport(int yearMonth,PrintWriter outFile,int order) {
+    	List<OneRecord> aMonth=this.database.getAllRecordsInAMonth(yearMonth);
+    	long totalWeight=0;
+    	Map<String, Long> farmWeightMap=new HashMap<>();
+    	for(OneRecord r:aMonth) {
+    		totalWeight+=r.getWeight();
+    		if(farmWeightMap.containsKey(r.getFarmID())) {
+    			farmWeightMap.replace(r.getFarmID(), farmWeightMap.get(r.getFarmID())+r.getWeight());
+    		}else {
+    			farmWeightMap.put(r.getFarmID(),(long)r.getWeight());
+    		}
+    	}
+//    	List<String>nameList=new ArrayList<String>();
+//    	for(String e:farmWeightMap.keySet()) {
+//    		nameList.add(e);
+//    	}
+//    	Collections.sort(nameList);
+    	outFile.println("Monthly report for "+yearMonth*1.0/100);
+    	outFile.println("Farm ID, Weight, Percent of total");
+    	for(String e:nameList) {
+    		outFile.println(e+", "+farmWeightMap.get(e)+", "+farmWeightMap.get(e)*100.0/totalWeight);
+    	}
+    }
+    
     public void dateRangeReport(int startDate,int endDate,PrintWriter outFile) {
     	List<OneRecord> recordList=this.database.getAllRecordsInDateRange(startDate, endDate);
     	long totalWeight=0;
