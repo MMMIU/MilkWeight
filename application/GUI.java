@@ -21,7 +21,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
@@ -188,7 +187,7 @@ public class GUI extends Application {
 	nextBtn.setMinHeight(30);
 	nextBtn.setMinWidth(100);
 
-	DropShadow shadow = new DropShadow();
+	// DropShadow shadow = new DropShadow();
 	// exitBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (MouseEvent e) -> {
 	// exitBtn.setEffect(shadow);
 	// });
