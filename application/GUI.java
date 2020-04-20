@@ -15,11 +15,13 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
@@ -30,6 +32,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
@@ -61,6 +64,7 @@ public class GUI extends Application {
 	private static final String APP_TITLE = "Milk Weight Manager-Ateam 37";
 	private static final String ADDER_TITLE = "Multiple Records Adder";
 	private static final String ERROR_TITLE = "ERROR";
+	private static final Label TEAMLABEL = new Label("Authors: Yifei Miao, Chenxi Gao, Chen Wang, Tianyi Zhao");
 	private Database database;
 	private List<Database> dataBaseHistory;
 	private ObservableList<OneRecord> tableList;
@@ -69,8 +73,9 @@ public class GUI extends Application {
 	private FileOutputer fileOutputer;
 	private Label recordsCount, farmCount, weightCount, daysCount, earliestDate, latestDate;
 	private int historyIndicator;
-	private Button deleteButton, deleteAllButton, unDoButton, reDoButton;
+	private Button fileOpenBtn, fileClearBtn, deleteButton, deleteAllButton, unDoButton, reDoButton, nextBtn;
 	private TableView<OneRecord> tableView;
+	private TextField searchBoxTextField;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -90,7 +95,7 @@ public class GUI extends Application {
 	}
 
 	private void FileManagerScene(Stage primaryStage) {
-		// Fist pane.
+		// Main pane.
 		BorderPane pane = new BorderPane();
 
 		// Top VBox
@@ -120,7 +125,7 @@ public class GUI extends Application {
 		// SearchBar HBox.
 		HBox searchBarHBox = new HBox();
 		// Text field for file addresses.
-		TextField searchBoxTextField = new TextField();
+		searchBoxTextField = new TextField();
 		searchBoxTextField.setPromptText("Use \"Choose\" button to select files from the system...");
 		searchBoxTextField.setMinWidth(CENTERBOX_WIDTH - 3 * SEARCHBARBUTTON_WIDTH);
 		searchBoxTextField.setEditable(false);
@@ -130,15 +135,16 @@ public class GUI extends Application {
 		// Button to open fileChooser.
 		Button fileChooserBtn = new Button("Choose");
 		fileChooserBtn.setMinWidth(SEARCHBARBUTTON_WIDTH);
-		Button fileClearBtn = new Button("Clear");
+		fileClearBtn = new Button("Clear");
 		fileClearBtn.setMinWidth(SEARCHBARBUTTON_WIDTH);
 		// Button to open fileChooser.
-		Button fileOpenBtn = new Button("Open");
+		fileOpenBtn = new Button("Open");
 		fileOpenBtn.setMinWidth(SEARCHBARBUTTON_WIDTH);
 		// Add components to SearchBar.
 		searchBarHBox.getChildren().addAll(searchBoxTextField, fileChooserBtn, fileClearBtn, fileOpenBtn);
 		// TableView.
 		tableView = new TableView<>();
+		tableView.requestFocus();
 		tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		tableView.setMinWidth(CENTERBOX_WIDTH);
 		tableView.setMinHeight(CENTERBOX_HEIGHT - 50);
@@ -186,19 +192,15 @@ public class GUI extends Application {
 		deleteButton = new Button("Delete");
 		deleteButton.setMinHeight(30);
 		deleteButton.setMinWidth(100);
-		deleteButton.setDisable(true);
 		deleteAllButton = new Button("Delete All");
 		deleteAllButton.setMinHeight(30);
 		deleteAllButton.setMinWidth(100);
-		deleteAllButton.setDisable(true);
 		unDoButton = new Button("Undo");
 		unDoButton.setMinHeight(30);
 		unDoButton.setMinWidth(100);
-		unDoButton.setDisable(true);
 		reDoButton = new Button("Redo");
 		reDoButton.setMinHeight(30);
 		reDoButton.setMinWidth(100);
-		reDoButton.setDisable(true);
 		rightVBox.getChildren().addAll(rightTopSpace, addBtn, deleteButton, deleteAllButton, unDoButton, reDoButton);
 		// Add rightVBox to the pane.
 		pane.setRight(rightVBox);
@@ -206,23 +208,16 @@ public class GUI extends Application {
 		// Bottom Panel.
 		HBox buttomHBox = new HBox(15);
 		buttomHBox.setMinHeight(BUTTOMBOX_HEIGHT);
-		buttomHBox.setPadding(new Insets(10));
+		buttomHBox.setPadding(new Insets(0, 10, 10, 0));
 		Button exitBtn = new Button("Exit");
 		exitBtn.setMinHeight(30);
 		exitBtn.setMinWidth(100);
-		Button nextBtn = new Button("Next");
+		nextBtn = new Button("Next");
 		nextBtn.setMinHeight(30);
 		nextBtn.setMinWidth(100);
-
-		// DropShadow shadow = new DropShadow();
-		// exitBtn.addEventHandler(MouseEvent.MOUSE_ENTERED, (MouseEvent e) -> {
-		// exitBtn.setEffect(shadow);
-		// });
-		// exitBtn.addEventHandler(MouseEvent.MOUSE_EXITED, (MouseEvent e) -> {
-		// exitBtn.setEffect(null);
-		// });
-
-		buttomHBox.getChildren().addAll(exitBtn, nextBtn);
+		TEAMLABEL.setPadding(new Insets(0, 390, 0, 0));
+		TEAMLABEL.setFont(new Font("Arial", 10));
+		buttomHBox.getChildren().addAll(TEAMLABEL, exitBtn, nextBtn);
 		buttomHBox.setAlignment(Pos.BOTTOM_RIGHT);
 		pane.setBottom(buttomHBox);
 
@@ -230,10 +225,13 @@ public class GUI extends Application {
 		VBox vbox = new VBox();
 		vbox.getChildren().addAll(this.ProgrressBar(1), pane);
 		// Display.
+		refreshStats();
+		refreshTable();
+		enableButtons();
 		primaryStage.setScene(new Scene(vbox, WINDOW_WIDTH, WINDOW_HEIGHT));
 
 		// Button operations.
-		// FileChooser button.
+		// Choose button.
 		List<File> files = new ArrayList<File>();
 		fileChooserBtn.setOnAction(event -> {
 			List<File> tmpfiles = fileChooser.showOpenMultipleDialog(primaryStage);
@@ -252,11 +250,13 @@ public class GUI extends Application {
 				text += files.get(files.size() - 1).getName().toString();
 				searchBoxTextField.setText(text);
 			}
+			enableButtons();
 		});
 		// Clear button.
 		fileClearBtn.setOnAction(event -> {
 			files.clear();
 			searchBoxTextField.clear();
+			enableButtons();
 		});
 		// Open button.
 		fileOpenBtn.setOnAction(event -> {
@@ -333,7 +333,7 @@ public class GUI extends Application {
 		nextBtn.setOnAction((ActionEvent e) -> {
 			this.DataDisplayScene(primaryStage);
 		});
-
+		fileChooserBtn.requestFocus();
 	}
 
 	/*
@@ -592,8 +592,10 @@ public class GUI extends Application {
 		}
 		if (this.database.size() == 0) {
 			this.deleteAllButton.setDisable(true);
+			this.nextBtn.setDisable(true);
 		} else {
 			this.deleteAllButton.setDisable(false);
+			this.nextBtn.setDisable(false);
 		}
 		if (this.historyIndicator == 0) {
 			this.unDoButton.setDisable(true);
@@ -605,12 +607,125 @@ public class GUI extends Application {
 		} else {
 			this.reDoButton.setDisable(false);
 		}
+		if (this.searchBoxTextField.getText().equals("")) {
+			this.fileOpenBtn.setDisable(true);
+			this.fileClearBtn.setDisable(true);
+		} else {
+			this.fileOpenBtn.setDisable(false);
+			this.fileClearBtn.setDisable(false);
+		}
 	}
 
 	private void DataDisplayScene(Stage primaryStage) {
-		VBox vbox = new VBox();
+		// Layer.
+		VBox mainPane = new VBox();
+		mainPane.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+		HBox upperPane = new HBox();
+		upperPane.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT - 100);
+		VBox leftVBox = new VBox(15);
+		leftVBox.setPadding(new Insets(10, 0, 0, 0));
+		leftVBox.setPrefSize(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100);
+		TextArea textArea = new TextArea(
+				"Display something...Display something...Display something...Display something...Display something...Display something...Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...");
+		textArea.setPrefWidth(WINDOW_WIDTH / 2);
+		textArea.setMinHeight(WINDOW_HEIGHT - 100);
+		textArea.setEditable(false);
+		textArea.setWrapText(true);
+		upperPane.getChildren().addAll(leftVBox,
+				new Line(GUI.WINDOW_WIDTH / 2 + 3, 0, GUI.WINDOW_WIDTH / 2 + 3, WINDOW_HEIGHT - 100), textArea);
+		HBox buttomHBox = new HBox(15);
+		buttomHBox.setPrefSize(WINDOW_WIDTH / 2, 100);
+		// Left operation pane.
+		// Line 1.
+		HBox line1 = new HBox(15);
+		line1.setPadding(new Insets(0, 0, 0, 10));
+		Label label1 = new Label("Min, max, average, by month for specified farm and year:");
+		label1.setPadding(new Insets(0, 0, 0, 10));
+		ComboBox<String> comboBoxFarm1 = new ComboBox<String>();
+		comboBoxFarm1.getItems().addAll(this.database.getFarmIDList());
+		comboBoxFarm1.setPromptText("Farm ID");
+		comboBoxFarm1.setPrefSize(150, 30);
+		comboBoxFarm1.setEditable(true);
+		ComboBox<Integer> comboBoxYear1 = new ComboBox<Integer>();
+		comboBoxYear1.getItems().addAll(this.database.getYearList());
+		comboBoxYear1.setPromptText("Year");
+		comboBoxYear1.setPrefSize(100, 30);
+		comboBoxYear1.setEditable(true);
+		Button getButton1 = new Button("Get");
+		getButton1.setPrefSize(100, 30);
+		line1.getChildren().addAll(comboBoxFarm1, comboBoxYear1, getButton1);
+		leftVBox.getChildren().addAll(label1, line1, new Line(0, 30, GUI.WINDOW_WIDTH / 2, 30));
+		// Line 2.
+		HBox line2 = new HBox(15);
+		line2.setPadding(new Insets(0, 0, 0, 10));
+		Label label2 = new Label("Min, max, average, for all farms for specified month and year");
+		label2.setPadding(new Insets(0, 0, 0, 10));
+		ComboBox<Integer> comboBoxYear2 = new ComboBox<Integer>();
+		comboBoxYear2.getItems().addAll(this.database.getYearList());
+		comboBoxYear2.setPromptText("Year");
+		comboBoxYear2.setPrefSize(150, 30);
+		comboBoxYear2.setEditable(true);
+		ComboBox<Integer> comboBoxMonth2 = new ComboBox<Integer>();
+		comboBoxMonth2.getItems().addAll(this.database.getMonthList());
+		comboBoxMonth2.setPromptText("Month");
+		comboBoxMonth2.setPrefSize(100, 30);
+		comboBoxMonth2.setEditable(true);
+		Button getButton2 = new Button("Get");
+		getButton2.setPrefSize(100, 30);
+		line2.getChildren().addAll(comboBoxYear2, comboBoxMonth2, getButton2);
+		leftVBox.getChildren().addAll(label2, line2, new Line(0, 30, GUI.WINDOW_WIDTH / 2, 30));
+		// Line 3.
+		HBox line3 = new HBox(15);
+		line3.setPadding(new Insets(0, 0, 0, 10));
+		Label label3 = new Label("Each farm's share (% of milk for given month or year) of net sales: ");
+		label3.setPadding(new Insets(0, 0, 0, 10));
+		ComboBox<Integer> comboBoxYear3 = new ComboBox<Integer>();
+		comboBoxYear3.getItems().addAll(this.database.getYearList());
+		comboBoxYear3.setPromptText("Year");
+		comboBoxYear3.setPrefSize(150, 30);
+		comboBoxYear3.setEditable(true);
+		ComboBox<Integer> comboBoxMonth3 = new ComboBox<Integer>();
+		comboBoxMonth3.getItems().addAll(this.database.getMonthList());
+		comboBoxMonth3.setPromptText("Month");
+		comboBoxMonth3.setPrefSize(100, 30);
+		comboBoxMonth3.setEditable(true);
+		Button getButton3 = new Button("Get");
+		getButton3.setPrefSize(100, 30);
+		line3.getChildren().addAll(comboBoxYear3, comboBoxMonth3, getButton3);
+		leftVBox.getChildren().addAll(label3, line3, new Line(0, 30, GUI.WINDOW_WIDTH / 2, 30));
+		// Buttom pane.
+		buttomHBox.setPrefSize(WINDOW_WIDTH, 100);
+		buttomHBox.setPadding(new Insets(0, 10, 10, 0));
+		Button previousBtn = new Button("Previous");
+		previousBtn.setMinHeight(30);
+		previousBtn.setMinWidth(100);
+		nextBtn = new Button("Next");
+		nextBtn.setMinHeight(30);
+		nextBtn.setMinWidth(100);
+		nextBtn.setDisable(true);
+		TEAMLABEL.setPadding(new Insets(0, 390, 0, 0));
+		TEAMLABEL.setFont(new Font("Arial", 10));
+		buttomHBox.getChildren().addAll(TEAMLABEL, previousBtn, nextBtn);
+		buttomHBox.setAlignment(Pos.BOTTOM_RIGHT);
 		// Display.
-		primaryStage.setScene(new Scene(vbox, WINDOW_WIDTH, WINDOW_HEIGHT));
+		mainPane.getChildren().addAll(ProgrressBar(2), upperPane,
+				new Line(0, WINDOW_HEIGHT - 100, WINDOW_WIDTH, WINDOW_HEIGHT - 100), buttomHBox);
+		primaryStage.setScene(new Scene(mainPane, WINDOW_WIDTH, WINDOW_HEIGHT));
+
+		// Button Operations
+		// getButton1
+
+		// getButton2
+		// getButton3
+		// Previous Button
+		previousBtn.setOnAction((ActionEvent e) -> {
+			this.FileManagerScene(primaryStage);
+		});
+		// Next Button
+		nextBtn.setOnAction((ActionEvent e) -> {
+			this.OutputScene(primaryStage);
+		});
+		getButton1.requestFocus();
 	}
 
 	private void OutputScene(Stage primaryStage) {

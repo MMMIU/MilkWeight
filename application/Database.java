@@ -459,7 +459,6 @@ public class Database {
 		}
 		Collections.sort(result);
 		return result;
-
 	}
 
 	/*
@@ -469,6 +468,21 @@ public class Database {
 		List<Integer> result = new ArrayList<>();
 		for (int e : this.databaseUsingMonth.keySet()) {
 			result.add(e);
+		}
+		Collections.sort(result);
+		return result;
+
+	}
+
+	/*
+	 * Return a list contains all years in ascending order.
+	 */
+	public List<Integer> getYearList() {
+		List<Integer> result = new ArrayList<>();
+		for (int e : this.databaseUsingMonth.keySet()) {
+			if (!result.contains(e / 100)) {
+				result.add(e / 100);
+			}
 		}
 		Collections.sort(result);
 		return result;
@@ -507,6 +521,6 @@ public class Database {
 		this.databaseUsingID = new HashMap<>();
 		this.databaseUsingMonth = new HashMap<>();
 		this.size = 0;
-		this.totalWeight=0;
+		this.totalWeight = 0;
 	}
 }
