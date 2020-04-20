@@ -5,9 +5,12 @@ package application;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -73,9 +76,12 @@ public class GUI extends Application {
 	private FileOutputer fileOutputer;
 	private Label recordsCount, farmCount, weightCount, daysCount, earliestDate, latestDate;
 	private int historyIndicator;
-	private Button fileOpenBtn, fileClearBtn, deleteButton, deleteAllButton, unDoButton, reDoButton, nextBtn;
+	private Button fileOpenBtn, fileClearBtn, deleteButton, deleteAllButton, unDoButton, reDoButton, nextBtn,
+			getButton1, getButton2, getButton3, getButton4, output1, output2, output3, output4;
 	private TableView<OneRecord> tableView;
 	private TextField searchBoxTextField;
+	private TextArea textArea;
+	private ComboBox<Integer> comboBoxYear1, comboBoxMonth2, comboBoxMonth3, comboBoxRange1, comboBoxRange2;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -409,25 +415,15 @@ public class GUI extends Application {
 		// Add button operation.
 		addBtn.setOnAction((ActionEvent e) -> {
 			String[] data = { dateText.getText(), farmIDText.getText(), weightText.getText() };
-			farmIDText.clear();
-			dateText.clear();
-			weightText.clear();
 			if (this.fileManager.checkData(data)) {
 				OneRecord record = this.fileManager.generateRecordUsingData(data);
 				this.database.add(record);
 				this.tableList.add(0, record);
-				;
 			} else {
 				this.errorWindow("Incorrect format of data, please check.");
 			}
-			List<Integer> allDates = this.database.getAllDates();
-			recordsCount.setText("Total Records:\n" + this.database.size());
-			farmCount.setText("Total Farms:\n" + this.database.getFarmIDList().size());
-			weightCount.setText("Total Weight:\n" + this.database.totalWeight());
-			daysCount.setText("Total Days:\n" + allDates.size());
-			earliestDate.setText("Earliset Date:\n" + allDates.get(0));
-			latestDate.setText("Lateset Date:\n" + allDates.get(allDates.size() - 1));
-			this.historyManager(true, false, false);
+			refreshStats();
+			enableButtons();
 		});
 		// Cancel button operation.
 		cancelBtn.setOnAction((ActionEvent e) -> {
@@ -625,12 +621,10 @@ public class GUI extends Application {
 		VBox leftVBox = new VBox(15);
 		leftVBox.setPadding(new Insets(10, 0, 0, 0));
 		leftVBox.setPrefSize(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100);
-		TextArea textArea = new TextArea(
-				"Display something...Display something...Display something...Display something...Display something...Display something...Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Dis..Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...Display something...");
-		textArea.setPrefWidth(WINDOW_WIDTH / 2);
+		textArea = new TextArea();
+		textArea.setPromptText("Ready to display...");
 		textArea.setMinHeight(WINDOW_HEIGHT - 100);
 		textArea.setEditable(false);
-		textArea.setWrapText(true);
 		upperPane.getChildren().addAll(leftVBox,
 				new Line(GUI.WINDOW_WIDTH / 2 + 3, 0, GUI.WINDOW_WIDTH / 2 + 3, WINDOW_HEIGHT - 100), textArea);
 		HBox buttomHBox = new HBox(15);
@@ -639,73 +633,164 @@ public class GUI extends Application {
 		// Line 1.
 		HBox line1 = new HBox(15);
 		line1.setPadding(new Insets(0, 0, 0, 10));
-		Label label1 = new Label("Min, max, average, by month for specified farm and year:");
+		Label label1 = new Label("FARM REPORT -- By month for specified farm and year:");
 		label1.setPadding(new Insets(0, 0, 0, 10));
 		ComboBox<String> comboBoxFarm1 = new ComboBox<String>();
 		comboBoxFarm1.getItems().addAll(this.database.getFarmIDList());
 		comboBoxFarm1.setPromptText("Farm ID");
-		comboBoxFarm1.setPrefSize(150, 30);
-		comboBoxFarm1.setEditable(true);
-		ComboBox<Integer> comboBoxYear1 = new ComboBox<Integer>();
+		comboBoxFarm1.setPrefSize(125, 30);
+		comboBoxFarm1.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
+			@Override
+			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+				comboBoxYear1.setDisable(false);
+			}
+		});
+		comboBoxYear1 = new ComboBox<Integer>();
 		comboBoxYear1.getItems().addAll(this.database.getYearList());
 		comboBoxYear1.setPromptText("Year");
-		comboBoxYear1.setPrefSize(100, 30);
-		comboBoxYear1.setEditable(true);
-		Button getButton1 = new Button("Get");
-		getButton1.setPrefSize(100, 30);
-		line1.getChildren().addAll(comboBoxFarm1, comboBoxYear1, getButton1);
+		comboBoxYear1.setPrefSize(125, 30);
+		comboBoxYear1.setDisable(true);
+		comboBoxYear1.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
+			@Override
+			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+				getButton1.setDisable(false);
+			}
+		});
+		getButton1 = new Button("Get");
+		getButton1.setPrefSize(50, 30);
+		getButton1.setDisable(true);
+		output1 = new Button("Output");
+		output1.setPrefSize(80, 30);
+		output1.setDisable(true);
+		line1.getChildren().addAll(comboBoxFarm1, comboBoxYear1, getButton1, output1);
 		leftVBox.getChildren().addAll(label1, line1, new Line(0, 30, GUI.WINDOW_WIDTH / 2, 30));
 		// Line 2.
 		HBox line2 = new HBox(15);
 		line2.setPadding(new Insets(0, 0, 0, 10));
-		Label label2 = new Label("Min, max, average, for all farms for specified month and year");
+		Label label2 = new Label("MONTHLY REPORT -- By farms for specified month and year:");
 		label2.setPadding(new Insets(0, 0, 0, 10));
 		ComboBox<Integer> comboBoxYear2 = new ComboBox<Integer>();
 		comboBoxYear2.getItems().addAll(this.database.getYearList());
 		comboBoxYear2.setPromptText("Year");
-		comboBoxYear2.setPrefSize(150, 30);
-		comboBoxYear2.setEditable(true);
-		ComboBox<Integer> comboBoxMonth2 = new ComboBox<Integer>();
+		comboBoxYear2.setPrefSize(125, 30);
+		comboBoxYear2.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
+			@Override
+			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+				comboBoxMonth2.setDisable(false);
+			}
+		});
+		comboBoxMonth2 = new ComboBox<Integer>();
 		comboBoxMonth2.getItems().addAll(this.database.getMonthList());
 		comboBoxMonth2.setPromptText("Month");
-		comboBoxMonth2.setPrefSize(100, 30);
-		comboBoxMonth2.setEditable(true);
-		Button getButton2 = new Button("Get");
-		getButton2.setPrefSize(100, 30);
-		line2.getChildren().addAll(comboBoxYear2, comboBoxMonth2, getButton2);
+		comboBoxMonth2.setPrefSize(125, 30);
+		comboBoxMonth2.setDisable(true);
+		comboBoxMonth2.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
+			@Override
+			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+				getButton2.setDisable(false);
+			}
+		});
+		getButton2 = new Button("Get");
+		getButton2.setPrefSize(50, 30);
+		getButton2.setDisable(true);
+		output2 = new Button("Output");
+		output2.setPrefSize(80, 30);
+		output2.setDisable(true);
+		line2.getChildren().addAll(comboBoxYear2, comboBoxMonth2, getButton2, output2);
 		leftVBox.getChildren().addAll(label2, line2, new Line(0, 30, GUI.WINDOW_WIDTH / 2, 30));
 		// Line 3.
 		HBox line3 = new HBox(15);
 		line3.setPadding(new Insets(0, 0, 0, 10));
-		Label label3 = new Label("Each farm's share (% of milk for given month or year) of net sales: ");
+		Label label3 = new Label("NET SALES REPORT -- Each farm's share of net sales: ");
 		label3.setPadding(new Insets(0, 0, 0, 10));
 		ComboBox<Integer> comboBoxYear3 = new ComboBox<Integer>();
 		comboBoxYear3.getItems().addAll(this.database.getYearList());
 		comboBoxYear3.setPromptText("Year");
-		comboBoxYear3.setPrefSize(150, 30);
-		comboBoxYear3.setEditable(true);
-		ComboBox<Integer> comboBoxMonth3 = new ComboBox<Integer>();
+		comboBoxYear3.setPrefSize(125, 30);
+		comboBoxYear3.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
+			@Override
+			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+				comboBoxMonth3.setDisable(false);
+				getButton3.setDisable(false);
+			}
+		});
+		comboBoxMonth3 = new ComboBox<Integer>();
 		comboBoxMonth3.getItems().addAll(this.database.getMonthList());
 		comboBoxMonth3.setPromptText("Month");
-		comboBoxMonth3.setPrefSize(100, 30);
-		comboBoxMonth3.setEditable(true);
-		Button getButton3 = new Button("Get");
-		getButton3.setPrefSize(100, 30);
-		line3.getChildren().addAll(comboBoxYear3, comboBoxMonth3, getButton3);
+		comboBoxMonth3.setPrefSize(125, 30);
+		comboBoxMonth3.setDisable(true);
+		getButton3 = new Button("Get");
+		getButton3.setPrefSize(50, 30);
+		getButton3.setDisable(true);
+		output3 = new Button("Output");
+		output3.setPrefSize(80, 30);
+		output3.setDisable(true);
+		line3.getChildren().addAll(comboBoxYear3, comboBoxMonth3, getButton3, output3);
 		leftVBox.getChildren().addAll(label3, line3, new Line(0, 30, GUI.WINDOW_WIDTH / 2, 30));
+		// Line 4.
+		HBox line4 = new HBox(15);
+		line4.setPadding(new Insets(0, 0, 0, 10));
+		Label label4 = new Label("DATE RANGE REPORT -- Total weight and the percentage for each farm:");
+		label4.setPadding(new Insets(0, 0, 0, 10));
+		comboBoxRange1 = new ComboBox<Integer>();
+		List<Integer> allDates = this.database.getAllDates();
+		List<Integer> notAllDates = new ArrayList<Integer>();
+		comboBoxRange1.getItems().addAll(allDates);
+		comboBoxRange1.setPromptText("Start Date");
+		comboBoxRange1.setPrefSize(125, 30);
+		comboBoxRange2 = new ComboBox<Integer>();
+		comboBoxRange2.setPromptText("End Date");
+		comboBoxRange2.setPrefSize(125, 30);
+		comboBoxRange2.setDisable(true);
+		comboBoxRange1.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
+			@Override
+			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+				comboBoxRange2.getItems().clear();
+				notAllDates.clear();
+				for (int e : allDates) {
+					if (e >= Integer.parseInt(newValue.toString())) {
+						notAllDates.add(e);
+					}
+				}
+				comboBoxRange2.getItems().addAll(notAllDates);
+				comboBoxRange2.setDisable(false);
+			}
+		});
+		comboBoxRange2.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
+			@Override
+			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+				getButton4.setDisable(false);
+			}
+		});
+		getButton4 = new Button("Get");
+		getButton4.setPrefSize(50, 30);
+		getButton4.setDisable(true);
+		output4 = new Button("Output");
+		output4.setPrefSize(80, 30);
+		output4.setDisable(true);
+		line4.getChildren().addAll(comboBoxRange1, comboBoxRange2, getButton4, output4);
+		leftVBox.getChildren().addAll(label4, line4, new Line(0, 30, GUI.WINDOW_WIDTH / 2, 30));
+		// Clear Button
+		HBox clearBox = new HBox();
+		clearBox.setPrefSize(WINDOW_WIDTH / 2, 30);
+		clearBox.setPadding(new Insets(0, 10, 0, 0));
+		clearBox.setAlignment(Pos.TOP_RIGHT);
+		Button clearBtn = new Button("Clear All");
+		clearBtn.setPrefSize(100, 20);
+		clearBox.getChildren().add(clearBtn);
+		leftVBox.getChildren().add(clearBox);
 		// Buttom pane.
 		buttomHBox.setPrefSize(WINDOW_WIDTH, 100);
 		buttomHBox.setPadding(new Insets(0, 10, 10, 0));
 		Button previousBtn = new Button("Previous");
 		previousBtn.setMinHeight(30);
 		previousBtn.setMinWidth(100);
-		nextBtn = new Button("Next");
-		nextBtn.setMinHeight(30);
-		nextBtn.setMinWidth(100);
-		nextBtn.setDisable(true);
+		Button exitBtn = new Button("Exit");
+		exitBtn.setMinHeight(30);
+		exitBtn.setMinWidth(100);
 		TEAMLABEL.setPadding(new Insets(0, 390, 0, 0));
 		TEAMLABEL.setFont(new Font("Arial", 10));
-		buttomHBox.getChildren().addAll(TEAMLABEL, previousBtn, nextBtn);
+		buttomHBox.getChildren().addAll(TEAMLABEL, previousBtn, exitBtn);
 		buttomHBox.setAlignment(Pos.BOTTOM_RIGHT);
 		// Display.
 		mainPane.getChildren().addAll(ProgrressBar(2), upperPane,
@@ -713,19 +798,323 @@ public class GUI extends Application {
 		primaryStage.setScene(new Scene(mainPane, WINDOW_WIDTH, WINDOW_HEIGHT));
 
 		// Button Operations
+//		  comboBox.getSelectionModel().selectedItemProperty()
+//          .addListener(new ChangeListener<Object>() {
+//
+//              @Override
+//              public void changed(ObservableValue observable,
+//                      Object oldValue, Object newValue) {
+//                  Image tmpimage = new Image(
+//                          "file:images/" + newValue.toString());
+//                  imageView.setImage(tmpimage);
+//                  imageView.setFitWidth(200);
+//                  imageView.setFitHeight(200);
+//              }
+//          });
 		// getButton1
-
+		getButton1.setOnAction((ActionEvent e) -> {
+			if ((!comboBoxFarm1.getValue().equals("")) && comboBoxYear1.getValue() != null) {
+				String farmID = comboBoxFarm1.getSelectionModel().getSelectedItem();
+				int year = comboBoxYear1.getSelectionModel().getSelectedItem();
+				List<List<OneRecord>> list = this.database.getAllRecordsInAYearOfAFarm(farmID, year);
+				boolean empty = true;
+				for (List<OneRecord> x : list) {
+					if (x.size() > 0) {
+						empty = false;
+						break;
+					}
+				}
+				if (!empty) {
+					this.textArea.clear();
+					this.textArea.setText("Min, max, average weight by month for " + farmID + " in " + year
+							+ ":\nMonth, min(percent), max(percent), average");
+					for (int i = 0; i < 12; i++) {
+						List<OneRecord> records = list.get(i);
+						int min = -1;
+						int max = -1;
+						double average = 0;
+						for (OneRecord r : records) {
+							if (min == -1 || r.getWeight() < min) {
+								min = r.getWeight();
+							}
+							if (max == -1 || r.getWeight() > max) {
+								max = r.getWeight();
+							}
+							average += r.getWeight();
+						}
+						if (min == -1) {
+							max = min = 0;
+						}
+						double minPercent = 100;
+						double maxPercent = 100;
+						if (average != 0) {
+							minPercent = 100 * min / average;
+							maxPercent = 100 * max / average;
+							average = average / records.size();
+						}
+						this.textArea
+								.setText(this.textArea.getText() + String.format("\n%3s, %d(%.3f), %d(%.3f), %.3f\n",
+										(i + 1), min, minPercent, max, maxPercent, average));
+					}
+				} else {
+					errorWindow("Error: no record exists.");
+				}
+			} else {
+				errorWindow("Error: invalid input.");
+			}
+		});
 		// getButton2
+		getButton2.setOnAction((ActionEvent e) -> {
+			if (comboBoxYear2.getValue() != null && comboBoxMonth2.getValue() != null) {
+				int year = comboBoxYear2.getSelectionModel().getSelectedItem();
+				int month = comboBoxMonth2.getSelectionModel().getSelectedItem() % 100;
+				List<OneRecord> list = this.database.getAllRecordsInAYear(year).get(month - 1);
+				if (list.size() >= 0) {
+					this.textArea.clear();
+					this.textArea.setText("Min, max, average weight for all farms in " + monthTrans(month) + ", " + year
+							+ ":\nFarm ID, min(date)(percent), max(date)(percent), average");
+					this.sortUsingIDUp(list);
+					while (list.size() > 0) {
+						OneRecord record = list.get(0);
+						list.remove(0);
+						int min = record.getWeight();
+						int minDate = record.getDate();
+						int max = record.getWeight();
+						int maxDate = record.getDate();
+						double average = record.getWeight();
+						List<OneRecord> tmp = new ArrayList<OneRecord>();
+						for (OneRecord r : list) {
+							if (r.getFarmID().equals(record.getFarmID())) {
+								if (r.getWeight() < min) {
+									min = r.getWeight();
+									minDate = r.getDate();
+								}
+								if (r.getWeight() > max) {
+									max = r.getWeight();
+									maxDate = r.getDate();
+								}
+								average += r.getWeight();
+								tmp.add(r);
+							}
+						}
+						double minPercent = 100;
+						double maxPercent = 100;
+						if (average != 0) {
+							minPercent = 100 * min / average;
+							maxPercent = 100 * max / average;
+						}
+						average = average / (tmp.size() + 1);
+						for (OneRecord r : tmp) {
+							list.remove(r);
+						}
+						this.textArea.setText(this.textArea.getText()
+								+ String.format("\n%10s, %6d(%d)(%.3f), %6d(%d)(%.3f), %9.3f\n", record.getFarmID(),
+										min, minDate, minPercent, max, maxDate, maxPercent, average));
+					}
+				} else {
+					errorWindow("Error: no record exists.");
+				}
+			} else {
+				errorWindow("Error: invalid input.");
+			}
+		});
 		// getButton3
+		getButton3.setOnAction((ActionEvent e) -> {
+			if (comboBoxYear3.getValue() != null && comboBoxMonth3.getValue() != null) {
+				int year = comboBoxYear3.getSelectionModel().getSelectedItem();
+				int month = comboBoxMonth3.getSelectionModel().getSelectedItem() % 100;
+				List<OneRecord> list = this.database.getAllRecordsInAYear(year).get(month - 1);
+				if (list.size() >= 0) {
+					this.textArea.clear();
+					this.textArea.setText("Each farm's share (% of total weight of the month) of net sales in "
+							+ monthTrans(month) + ", " + year + ":\nFarm ID, total weight, share(%)");
+					this.sortUsingIDUp(list);
+					long totalWeight = 0;
+					for (OneRecord r : list) {
+						totalWeight += r.getWeight();
+					}
+					while (list.size() > 0) {
+						OneRecord record = list.get(0);
+						list.remove(0);
+						long farmTotal = record.getWeight();
+						List<OneRecord> tmp = new ArrayList<OneRecord>();
+						for (OneRecord r : list) {
+							if (r.getFarmID().equals(record.getFarmID())) {
+								farmTotal += r.getWeight();
+								tmp.add(r);
+							}
+						}
+						for (OneRecord r : tmp) {
+							list.remove(r);
+						}
+						double share = 100;
+						if (totalWeight != 0) {
+							share = farmTotal * 100.0 / totalWeight;
+						}
+						this.textArea.setText(this.textArea.getText()
+								+ String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal, share));
+					}
+				} else {
+					errorWindow("Error: no record exists.");
+				}
+			} else if (comboBoxYear3.getValue() != null) {
+				int year = comboBoxYear3.getSelectionModel().getSelectedItem();
+				List<List<OneRecord>> inlist = this.database.getAllRecordsInAYear(year);
+				List<OneRecord> list = new ArrayList<OneRecord>();
+				for (List<OneRecord> li : inlist) {
+					for (OneRecord r : li) {
+						list.add(r);
+					}
+				}
+				sortUsingIDUp(list);
+				if (list.size() >= 0) {
+					this.textArea.clear();
+					this.textArea.setText("Each farm's share (% of total weight of the year) of net sales in " + year
+							+ ":\nFarm ID, total weight, share(%)");
+					long totalWeight = 0;
+					for (OneRecord r : list) {
+						totalWeight += r.getWeight();
+					}
+					while (list.size() > 0) {
+						OneRecord record = list.get(0);
+						list.remove(0);
+						long farmTotal = record.getWeight();
+						List<OneRecord> tmp = new ArrayList<OneRecord>();
+						for (OneRecord r : list) {
+							if (r.getFarmID().equals(record.getFarmID())) {
+								farmTotal += r.getWeight();
+								tmp.add(r);
+							}
+						}
+						for (OneRecord r : tmp) {
+							list.remove(r);
+						}
+						double share = 100;
+						if (totalWeight != 0) {
+							share = farmTotal * 100.0 / totalWeight;
+						}
+						this.textArea.setText(this.textArea.getText()
+								+ String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal, share));
+					}
+				} else {
+					errorWindow("Error: no record exists.");
+				}
+			} else {
+				errorWindow("Error: invalid input.");
+			}
+		});
+		// getButton4
+		getButton4.setOnAction((ActionEvent e) -> {
+			int startDate = comboBoxRange1.getSelectionModel().getSelectedItem();
+			int endDate = comboBoxRange2.getSelectionModel().getSelectedItem();
+			List<OneRecord> list = this.database.getAllRecordsInDateRange(startDate, endDate);
+			System.out.println(list.size());
+			sortUsingIDUp(list);
+			if (list.size() >= 0) {
+				this.textArea.clear();
+				this.textArea
+						.setText("Total milk weight per farm and the percentage of the total for each farm between "
+								+ startDate + " and " + endDate + ":\nFarm ID, total weight, share(%)");
+				long totalWeight = 0;
+				for (OneRecord r : list) {
+					totalWeight += r.getWeight();
+				}
+				while (list.size() > 0) {
+					OneRecord record = list.get(0);
+					list.remove(0);
+					long farmTotal = record.getWeight();
+					List<OneRecord> tmp = new ArrayList<OneRecord>();
+					for (OneRecord r : list) {
+						if (r.getFarmID().equals(record.getFarmID())) {
+							farmTotal += r.getWeight();
+							tmp.add(r);
+						}
+					}
+					for (OneRecord r : tmp) {
+						list.remove(r);
+					}
+					double share = 100;
+					if (totalWeight != 0) {
+						share = farmTotal * 100.0 / totalWeight;
+					}
+					this.textArea.setText(this.textArea.getText()
+							+ String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal, share));
+				}
+			} else {
+				errorWindow("Error: no record exists.");
+			}
+		});
+		// Output1 Button
+
+		// Output2 Button
+		// Output3 Button
+		// Output4 Button
+		// Clear Button
+		clearBtn.setOnAction((ActionEvent e) -> {
+			this.DataDisplayScene(primaryStage);
+		});
 		// Previous Button
 		previousBtn.setOnAction((ActionEvent e) -> {
 			this.FileManagerScene(primaryStage);
 		});
-		// Next Button
-		nextBtn.setOnAction((ActionEvent e) -> {
-			this.OutputScene(primaryStage);
+		// Exit Button
+		exitBtn.setOnAction((ActionEvent e) -> {
+			primaryStage.close();
+			System.exit(0);
 		});
 		getButton1.requestFocus();
+	}
+
+	private String monthTrans(int month) {
+		switch (month) {
+		case 1:
+			return "Januarary";
+		case 2:
+			return "Feburary";
+		case 3:
+			return "March";
+		case 4:
+			return "April";
+		case 5:
+			return "May";
+		case 6:
+			return "June";
+		case 7:
+			return "July";
+		case 8:
+			return "August";
+		case 9:
+			return "September";
+		case 10:
+			return "October";
+		case 11:
+			return "November";
+		case 12:
+			return "December";
+
+		default:
+			return "Error";
+		}
+	}
+
+	private void sortUsingIDUp(List<OneRecord> list) {
+		List<OneRecord> tmp = new ArrayList<OneRecord>();
+		List<String> nameList = new ArrayList<String>();
+		for (OneRecord r : list) {
+			if (!nameList.contains(r.getFarmID())) {
+				nameList.add(r.getFarmID());
+			}
+		}
+		Collections.sort(nameList);
+		for (String e : nameList) {
+			for (OneRecord r : list) {
+				if (r.getFarmID().equals(e)) {
+					tmp.add(r);
+				}
+			}
+		}
+		list.clear();
+		list.addAll(tmp);
 	}
 
 	private void OutputScene(Stage primaryStage) {

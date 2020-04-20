@@ -145,41 +145,6 @@ public class Database {
 		return true;
 	}
 
-	/*
-	 * Remove all records of a farm in the database.
-	 *
-	 * @param farmID Name of the farm.
-	 *
-	 * @returns True if the record is successfully deleted from the database. False
-	 * otherwise.
-	 */
-	public boolean removeAFarm(String farmID) {
-		if (!this.databaseUsingID.containsKey(farmID)) {
-			return false;
-		} else {
-			boolean exist = true;
-			Set<String> keys = this.databaseUsingID.keySet();
-			for (String e : keys) {
-				if (e == farmID) {
-					exist = true;
-				}
-			}
-			if (!exist) {
-				return false;
-			}
-
-		}
-		for (int i = 0; i < this.databaseUsingID.get(farmID).size(); i++) {
-			if (this.databaseUsingID.get(farmID).get(i).getFarmID() == farmID) {
-				this.databaseUsingID.get(farmID).remove(i);
-				break;
-			}
-		}
-
-		this.size--;
-		return true;
-	}
-
 	public boolean contains(OneRecord record) {
 		if (this.databaseUsingID.containsKey(record.getFarmID())) {
 			for (OneRecord e : this.databaseUsingID.get(record.getFarmID())) {
@@ -201,20 +166,6 @@ public class Database {
 				return e.getWeight();
 		}
 		return 0;
-	}
-
-	/*
-	 * Return a list of all dates for specified id and weight. Return empty list if
-	 * no record.
-	 *
-	 */
-	public List<Integer> getDateForAFarmUsingWeight(String farmID, int weight) {
-		List<Integer> dateList = new ArrayList<Integer>();
-		for (OneRecord e : this.databaseUsingID.get(farmID)) {
-			if (e.getWeight() == weight)
-				dateList.add(e.getDate());
-		}
-		return dateList;
 	}
 
 	/*
@@ -254,13 +205,15 @@ public class Database {
 	 * empty list. Return empty list if no record.
 	 *
 	 */
-	public List<OneRecord> getAllRecordsInAYear(int year) {
-		List<OneRecord> result = new ArrayList<OneRecord>();
-		Set<Integer> keys = this.databaseUsingMonth.keySet();
-		for (int e : keys) {
-			if (e / 10000 == year) {
-				for (OneRecord r : this.databaseUsingMonth.get(e)) {
-					result.add(r);
+	public List<List<OneRecord>> getAllRecordsInAYear(int year) {
+		List<List<OneRecord>> result = new ArrayList<List<OneRecord>>();
+		for (int i = 0; i < 12; i++) {
+			result.add(new ArrayList<OneRecord>());
+		}
+		for (int yearMonth : this.databaseUsingMonth.keySet()) {
+			if (yearMonth / 100 == year) {
+				for (OneRecord r : this.databaseUsingMonth.get(yearMonth)) {
+					result.get(yearMonth % 100 - 1).add(r);
 				}
 			}
 		}
@@ -274,12 +227,9 @@ public class Database {
 	 */
 	public List<OneRecord> getAllRecordsInDateRange(int startDate, int endDate) {
 		List<OneRecord> result = new ArrayList<OneRecord>();
-		Set<Integer> keys = this.databaseUsingMonth.keySet();
-		for (int e : keys) {
-			if (e >= startDate && e <= endDate) {
-				for (OneRecord r : this.databaseUsingMonth.get(e)) {
-					result.add(r);
-				}
+		for (OneRecord r : this.getAllRecords()) {
+			if (r.getDate() >= startDate && r.getDate() <= endDate) {
+				result.add(r);
 			}
 		}
 		return result;
@@ -297,6 +247,44 @@ public class Database {
 			if (e == farmID) {
 				for (OneRecord r : this.databaseUsingID.get(e)) {
 					result.add(r);
+				}
+			}
+		}
+		return result;
+	}
+
+	/*
+	 * Return a list of all records of a farm in a month. Return empty list if no
+	 * record.
+	 *
+	 */
+	public List<OneRecord> getAllRecordsInAMonthOfAFarm(String farmID, int yearMonth) {
+		List<OneRecord> result = new ArrayList<OneRecord>();
+		List<OneRecord> listOfAMonth = this.databaseUsingMonth.get(yearMonth);
+		for (OneRecord r : listOfAMonth) {
+			if (r.getFarmID().equals(farmID)) {
+				result.add(r);
+			}
+		}
+		return result;
+	}
+
+	/*
+	 * Return a list of all records of a farm in a year hashed by month. Return list
+	 * with 12 empty sublist if no record.
+	 *
+	 */
+	public List<List<OneRecord>> getAllRecordsInAYearOfAFarm(String farmID, int year) {
+		List<List<OneRecord>> result = new ArrayList<List<OneRecord>>();
+		for (int i = 0; i < 12; i++) {
+			result.add(new ArrayList<OneRecord>());
+		}
+		for (int yearMonth : this.databaseUsingMonth.keySet()) {
+			if (yearMonth / 100 == year) {
+				for (OneRecord r : this.databaseUsingMonth.get(yearMonth)) {
+					if (r.getFarmID().equals(farmID)) {
+						result.get(yearMonth % 100 - 1).add(r);
+					}
 				}
 			}
 		}
