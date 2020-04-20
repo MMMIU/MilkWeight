@@ -4,6 +4,10 @@
 package application;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,6 +42,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -73,7 +78,6 @@ public class GUI extends Application {
 	private ObservableList<OneRecord> tableList;
 	private List<List<OneRecord>> tableListHistory;
 	private FileManager fileManager;
-	private FileOutputer fileOutputer;
 	private Label recordsCount, farmCount, weightCount, daysCount, earliestDate, latestDate;
 	private int historyIndicator;
 	private Button fileOpenBtn, fileClearBtn, deleteButton, deleteAllButton, unDoButton, reDoButton, nextBtn,
@@ -82,6 +86,8 @@ public class GUI extends Application {
 	private TextField searchBoxTextField;
 	private TextArea textArea;
 	private ComboBox<Integer> comboBoxYear1, comboBoxMonth2, comboBoxMonth3, comboBoxRange1, comboBoxRange2;
+	private String output1String, output2String, output3String, output4String;
+	private String output1Name, output2Name, output3Name, output4Name;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -93,7 +99,6 @@ public class GUI extends Application {
 		this.tableListHistory.add(new ArrayList<OneRecord>());
 		this.historyIndicator = 0;
 		this.fileManager = new FileManager(this.database);
-		this.fileOutputer = new FileOutputer(this.database);
 		this.FileManagerScene(primaryStage);
 		primaryStage.setTitle(APP_TITLE);
 		primaryStage.setResizable(false);
@@ -490,16 +495,10 @@ public class GUI extends Application {
 		label1.setAlignment(Pos.CENTER);
 		// Second step.
 		Label label2 = new Label();
-		label2.setText("2.Display");
-		label2.setMinWidth(100);
+		label2.setText("2.Display & Output");
+		label2.setMinWidth(150);
 		label2.setMinHeight(PROGRESSBAR_Height);
 		label2.setAlignment(Pos.CENTER);
-		// Third step.
-		Label label3 = new Label();
-		label3.setText("3.Output");
-		label3.setMinWidth(100);
-		label3.setMinHeight(PROGRESSBAR_Height);
-		label3.setAlignment(Pos.CENTER);
 		// Step selection.
 		if (page == 1) {
 			label1.setBackground(new Background(new BackgroundFill(Color.GRAY, null, null)));
@@ -507,12 +506,9 @@ public class GUI extends Application {
 		} else if (page == 2) {
 			label2.setBackground(new Background(new BackgroundFill(Color.GRAY, null, null)));
 			label2.setTextFill(Color.WHITE);
-		} else if (page == 3) {
-			label3.setBackground(new Background(new BackgroundFill(Color.GRAY, null, null)));
-			label3.setTextFill(Color.WHITE);
 		}
 		// Add to panel.
-		result.getChildren().addAll(label1, label2, label3);
+		result.getChildren().addAll(label1, label2);
 		return result;
 	}
 
@@ -826,8 +822,8 @@ public class GUI extends Application {
 				}
 				if (!empty) {
 					this.textArea.clear();
-					this.textArea.setText("Min, max, average weight by month for " + farmID + " in " + year
-							+ ":\nMonth, min(percent), max(percent), average");
+					this.output1String = "Min, max, average weight by month for " + farmID + " in " + year
+							+ ":\nMonth, min(percent), max(percent), average";
 					for (int i = 0; i < 12; i++) {
 						List<OneRecord> records = list.get(i);
 						int min = -1;
@@ -852,10 +848,12 @@ public class GUI extends Application {
 							maxPercent = 100 * max / average;
 							average = average / records.size();
 						}
-						this.textArea
-								.setText(this.textArea.getText() + String.format("\n%3s, %d(%.3f), %d(%.3f), %.3f\n",
-										(i + 1), min, minPercent, max, maxPercent, average));
+						this.output1String += String.format("\n%3s, %d(%.3f), %d(%.3f), %.3f\n", (i + 1), min,
+								minPercent, max, maxPercent, average);
+						this.textArea.setText(output1String);
 					}
+					this.output1Name = "FARMREPORT-" + farmID + "-" + year + ".txt";
+					this.output1.setDisable(false);
 				} else {
 					errorWindow("Error: no record exists.");
 				}
@@ -871,8 +869,8 @@ public class GUI extends Application {
 				List<OneRecord> list = this.database.getAllRecordsInAYear(year).get(month - 1);
 				if (list.size() >= 0) {
 					this.textArea.clear();
-					this.textArea.setText("Min, max, average weight for all farms in " + monthTrans(month) + ", " + year
-							+ ":\nFarm ID, min(date)(percent), max(date)(percent), average");
+					this.output2String = "Min, max, average weight for all farms in " + monthTrans(month) + ", " + year
+							+ ":\nFarm ID, min(date)(percent), max(date)(percent), average";
 					this.sortUsingIDUp(list);
 					while (list.size() > 0) {
 						OneRecord record = list.get(0);
@@ -907,10 +905,12 @@ public class GUI extends Application {
 						for (OneRecord r : tmp) {
 							list.remove(r);
 						}
-						this.textArea.setText(this.textArea.getText()
-								+ String.format("\n%10s, %6d(%d)(%.3f), %6d(%d)(%.3f), %9.3f\n", record.getFarmID(),
-										min, minDate, minPercent, max, maxDate, maxPercent, average));
+						this.output2String += String.format("\n%10s, %6d(%d)(%.3f), %6d(%d)(%.3f), %9.3f\n",
+								record.getFarmID(), min, minDate, minPercent, max, maxDate, maxPercent, average);
+						this.textArea.setText(output2String);
 					}
+					this.output2Name = "MONTHLYREPORT-" + year + "-" + month + ".txt";
+					this.output2.setDisable(false);
 				} else {
 					errorWindow("Error: no record exists.");
 				}
@@ -926,8 +926,8 @@ public class GUI extends Application {
 				List<OneRecord> list = this.database.getAllRecordsInAYear(year).get(month - 1);
 				if (list.size() >= 0) {
 					this.textArea.clear();
-					this.textArea.setText("Each farm's share (% of total weight of the month) of net sales in "
-							+ monthTrans(month) + ", " + year + ":\nFarm ID, total weight, share(%)");
+					this.output3String = "Each farm's share (% of total weight of the month) of net sales in "
+							+ monthTrans(month) + ", " + year + ":\nFarm ID, total weight, share(%)";
 					this.sortUsingIDUp(list);
 					long totalWeight = 0;
 					for (OneRecord r : list) {
@@ -951,9 +951,13 @@ public class GUI extends Application {
 						if (totalWeight != 0) {
 							share = farmTotal * 100.0 / totalWeight;
 						}
-						this.textArea.setText(this.textArea.getText()
-								+ String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal, share));
+
+						this.output3String += String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal,
+								share);
+						this.textArea.setText(this.output3String);
 					}
+					this.output3Name = "NETSALESREPORT-" + year + "-" + month + ".txt";
+					this.output3.setDisable(false);
 				} else {
 					errorWindow("Error: no record exists.");
 				}
@@ -969,8 +973,8 @@ public class GUI extends Application {
 				sortUsingIDUp(list);
 				if (list.size() >= 0) {
 					this.textArea.clear();
-					this.textArea.setText("Each farm's share (% of total weight of the year) of net sales in " + year
-							+ ":\nFarm ID, total weight, share(%)");
+					this.output3String = "Each farm's share (% of total weight of the year) of net sales in " + year
+							+ ":\nFarm ID, total weight, share(%)";
 					long totalWeight = 0;
 					for (OneRecord r : list) {
 						totalWeight += r.getWeight();
@@ -993,9 +997,13 @@ public class GUI extends Application {
 						if (totalWeight != 0) {
 							share = farmTotal * 100.0 / totalWeight;
 						}
-						this.textArea.setText(this.textArea.getText()
-								+ String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal, share));
+
+						this.output3String += String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal,
+								share);
+						this.textArea.setText(this.output3String);
 					}
+					this.output3Name = "NETSALESREPORT-" + year + ".txt";
+					this.output3.setDisable(false);
 				} else {
 					errorWindow("Error: no record exists.");
 				}
@@ -1008,13 +1016,11 @@ public class GUI extends Application {
 			int startDate = comboBoxRange1.getSelectionModel().getSelectedItem();
 			int endDate = comboBoxRange2.getSelectionModel().getSelectedItem();
 			List<OneRecord> list = this.database.getAllRecordsInDateRange(startDate, endDate);
-			System.out.println(list.size());
 			sortUsingIDUp(list);
 			if (list.size() >= 0) {
 				this.textArea.clear();
-				this.textArea
-						.setText("Total milk weight per farm and the percentage of the total for each farm between "
-								+ startDate + " and " + endDate + ":\nFarm ID, total weight, share(%)");
+				this.output4String = "Total milk weight per farm and the percentage of the total for each farm between "
+						+ startDate + " and " + endDate + ":\nFarm ID, total weight, share(%)";
 				long totalWeight = 0;
 				for (OneRecord r : list) {
 					totalWeight += r.getWeight();
@@ -1037,18 +1043,32 @@ public class GUI extends Application {
 					if (totalWeight != 0) {
 						share = farmTotal * 100.0 / totalWeight;
 					}
-					this.textArea.setText(this.textArea.getText()
-							+ String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal, share));
+
+					this.output4String += String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal, share);
+					this.textArea.setText(this.output4String);
 				}
+				this.output4Name = "DATERANGEREPORT-" + startDate + "-" + endDate + ".txt";
+				this.output4.setDisable(false);
 			} else {
 				errorWindow("Error: no record exists.");
 			}
 		});
 		// Output1 Button
-
+		output1.setOnAction((ActionEvent e) -> {
+			this.outputFile(primaryStage, this.output1Name, output1String);
+		});
 		// Output2 Button
+		output2.setOnAction((ActionEvent e) -> {
+			this.outputFile(primaryStage, this.output2Name, output2String);
+		});
 		// Output3 Button
+		output3.setOnAction((ActionEvent e) -> {
+			this.outputFile(primaryStage, this.output3Name, output3String);
+		});
 		// Output4 Button
+		output4.setOnAction((ActionEvent e) -> {
+			this.outputFile(primaryStage, this.output4Name, output4String);
+		});
 		// Clear Button
 		clearBtn.setOnAction((ActionEvent e) -> {
 			this.DataDisplayScene(primaryStage);
@@ -1117,7 +1137,19 @@ public class GUI extends Application {
 		list.addAll(tmp);
 	}
 
-	private void OutputScene(Stage primaryStage) {
+	private void outputFile(Stage primaryStage, String name, String content) {
+		DirectoryChooser directoryChooser = new DirectoryChooser();
+		File file = directoryChooser.showDialog(primaryStage);
+		String path = file.getPath() + "\\" + name;
+		System.out.println(path);
+		try {
+			PrintWriter out = new PrintWriter(new FileWriter(new File(path)));
+			out.print(content);
+			out.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-
 }
