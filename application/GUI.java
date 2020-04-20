@@ -1141,7 +1141,6 @@ public class GUI extends Application {
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 		File file = directoryChooser.showDialog(primaryStage);
 		String path = file.getPath() + "\\" + name;
-		System.out.println(path);
 		try {
 			PrintWriter out = new PrintWriter(new FileWriter(new File(path)));
 			out.print(content);
