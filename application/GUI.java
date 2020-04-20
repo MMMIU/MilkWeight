@@ -16,6 +16,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -55,7 +56,7 @@ public class GUI extends Application {
 	private static final int CENTERBOX_HEIGHT = 360;
 	private static final int BUTTOMBOX_HEIGHT = 70;
 	private static final int ADDWIDOW_HEIGHT = 35;
-	private static final int ERRORWIDOW_HEIGHT = 150;
+	private static final int ERRORWIDOW_HEIGHT = 200;
 	// Private members.
 	private static final String APP_TITLE = "Milk Weight Manager-Ateam 37";
 	private static final String ADDER_TITLE = "Multiple Records Adder";
@@ -69,6 +70,7 @@ public class GUI extends Application {
 	private Label recordsCount, farmCount, weightCount, daysCount, earliestDate, latestDate;
 	private int historyIndicator;
 	private Button deleteButton, deleteAllButton, unDoButton, reDoButton;
+	private TableView<OneRecord> tableView;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -136,7 +138,7 @@ public class GUI extends Application {
 		// Add components to SearchBar.
 		searchBarHBox.getChildren().addAll(searchBoxTextField, fileChooserBtn, fileClearBtn, fileOpenBtn);
 		// TableView.
-		TableView<OneRecord> tableView = new TableView<>();
+		tableView = new TableView<>();
 		tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		tableView.setMinWidth(CENTERBOX_WIDTH);
 		tableView.setMinHeight(CENTERBOX_HEIGHT - 50);
@@ -154,6 +156,11 @@ public class GUI extends Application {
 
 		tableView.setItems(this.tableList);
 		tableView.getColumns().addAll(nameCol, dateCol, weightCol);
+		tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+			if (newSelection != null) {
+				this.deleteButton.setDisable(false);
+			}
+		});
 		// Add SearchBar and table to centerVBox.
 		centerVBox.getChildren().addAll(searchBarHBox, tableView);
 		centerVBox.setMinWidth(CENTERBOX_WIDTH);
@@ -271,6 +278,7 @@ public class GUI extends Application {
 				files.clear();
 			}
 			enableButtons();
+			this.deleteButton.setDisable(true);
 		});
 		// Add button.
 		addBtn.setOnAction((ActionEvent e) -> {
@@ -328,6 +336,9 @@ public class GUI extends Application {
 
 	}
 
+	/*
+	 * Refresh tableView according to current database in the first page.
+	 */
 	private void refreshTable() {
 		this.tableList.clear();
 		for (OneRecord e : this.database.getAllRecords()) {
@@ -335,6 +346,9 @@ public class GUI extends Application {
 		}
 	}
 
+	/*
+	 * Refresh Statistics panel according to current database in the first page.
+	 */
 	private void refreshStats() {
 		List<Integer> allDates = this.database.getAllDates();
 		if (allDates.size() != 0) {
@@ -352,15 +366,6 @@ public class GUI extends Application {
 			earliestDate.setText("Earliset Date:\nUnknown");
 			latestDate.setText("Lateset Date:\nUnknown");
 		}
-	}
-
-	private void DataDisplayScene(Stage primaryStage) {
-		VBox vbox = new VBox();
-		// Display.
-		primaryStage.setScene(new Scene(vbox, WINDOW_WIDTH, WINDOW_HEIGHT));
-	}
-
-	private void OutputScene(Stage primaryStage) {
 	}
 
 	private void addBtnWindow(Stage primaryStage) {
@@ -430,28 +435,34 @@ public class GUI extends Application {
 		});
 	}
 
+	/*
+	 * Popup window to display errors and messages.
+	 */
 	private void popUpWindow(String title, String message) {
-		VBox vBox = new VBox(20);
+		VBox vBox = new VBox(10);
 		vBox.setAlignment(Pos.TOP_CENTER);
+		// Scroll Pane
+		ScrollPane scrollPane = new ScrollPane();
+		scrollPane.setPrefSize(ERRORWIDOW_WIDTH, ERRORWIDOW_HEIGHT - 45);
 		// Top space.
 		VBox top = new VBox();
 		top.setMinHeight(ERRORWIDOW_HEIGHT / 6);
 		// Message label.
-		Label center = new Label(message);
-		center.setMinHeight(ERRORWIDOW_HEIGHT / 3);
-		center.setMinWidth(ERRORWIDOW_WIDTH);
-		center.setAlignment(Pos.CENTER);
+		Label messageLabel = new Label(message);
+		messageLabel.setAlignment(Pos.CENTER);
 		// OK button.
 		Button okBtn = new Button("OK");
 		okBtn.setAlignment(Pos.CENTER);
 		okBtn.setMinWidth(75);
-		vBox.getChildren().addAll(top, center, okBtn);
-		// Add to scene and stage.
 		Stage errorWindowStage = new Stage();
+		scrollPane.setContent(messageLabel);
+		vBox.getChildren().addAll(scrollPane, okBtn);
+		// Add to scene and stage.
 		Scene mainScene = new Scene(vBox, ERRORWIDOW_WIDTH, ERRORWIDOW_HEIGHT);
 		errorWindowStage.initModality(Modality.APPLICATION_MODAL);
 		errorWindowStage.setScene(mainScene);
 		errorWindowStage.setTitle(title);
+		errorWindowStage.setResizable(false);
 		errorWindowStage.show();
 		// Return button operation.
 		okBtn.setOnAction((ActionEvent e) -> {
@@ -459,11 +470,16 @@ public class GUI extends Application {
 		});
 	}
 
+	/*
+	 * Popup window to display errors.
+	 */
 	private void errorWindow(String message) {
 		popUpWindow(ERROR_TITLE, message);
-
 	}
 
+	/*
+	 * Progress bar on top of the window.
+	 */
 	private HBox ProgrressBar(int page) {
 		// HBox Panel.
 		HBox result = new HBox();
@@ -504,6 +520,9 @@ public class GUI extends Application {
 		return result;
 	}
 
+	/*
+	 * Create a label to show status of the database in the first page.
+	 */
 	private Label setALabel(String init) {
 		Label label = new Label(init);
 		label.setPrefSize(90, 60);
@@ -515,6 +534,9 @@ public class GUI extends Application {
 		return label;
 	}
 
+	/*
+	 * Manage historical version of the program.
+	 */
 	private void historyManager(boolean addHistory, boolean undo, boolean redo) {
 		if (addHistory) {
 			while (this.dataBaseHistory.size() > this.historyIndicator + 1) {
@@ -544,12 +566,33 @@ public class GUI extends Application {
 		}
 	}
 
+	/*
+	 * Match current database and tableList version with the historical version
+	 * indicated by the pointer.
+	 */
+	private void matchVersion() {
+		this.database.clear();
+		for (OneRecord r : this.dataBaseHistory.get(this.historyIndicator).getAllRecords()) {
+			this.database.add(new OneRecord(r.getFarmID(), r.getDate(), r.getWeight()));
+		}
+		this.tableList.clear();
+		for (OneRecord r : this.tableListHistory.get(this.historyIndicator)) {
+			this.tableList.add(new OneRecord(r.getFarmID(), r.getDate(), r.getWeight()));
+		}
+	}
+
+	/*
+	 * Enable or disable buttons according to current status.
+	 */
 	private void enableButtons() {
-		if (this.database.size() == 0) {
+		if (this.tableView.getSelectionModel().getSelectedIndices().size() > 0) {
+			this.deleteButton.setDisable(false);
+		} else {
 			this.deleteButton.setDisable(true);
+		}
+		if (this.database.size() == 0) {
 			this.deleteAllButton.setDisable(true);
 		} else {
-			this.deleteButton.setDisable(false);
 			this.deleteAllButton.setDisable(false);
 		}
 		if (this.historyIndicator == 0) {
@@ -564,14 +607,13 @@ public class GUI extends Application {
 		}
 	}
 
-	private void matchVersion() {
-		this.database.clear();
-		for (OneRecord r : this.dataBaseHistory.get(this.historyIndicator).getAllRecords()) {
-			this.database.add(new OneRecord(r.getFarmID(), r.getDate(), r.getWeight()));
-		}
-		this.tableList.clear();
-		for (OneRecord r : this.tableListHistory.get(this.historyIndicator)) {
-			this.tableList.add(new OneRecord(r.getFarmID(), r.getDate(), r.getWeight()));
-		}
+	private void DataDisplayScene(Stage primaryStage) {
+		VBox vbox = new VBox();
+		// Display.
+		primaryStage.setScene(new Scene(vbox, WINDOW_WIDTH, WINDOW_HEIGHT));
 	}
+
+	private void OutputScene(Stage primaryStage) {
+	}
+
 }
