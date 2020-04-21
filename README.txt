@@ -19,7 +19,7 @@ Team Members:
 
 	2.  ChenXi Gao, LEC001, cgao65@wisc.edu
 
-	3.   Chen Wang, LEC001, 
+	3.   Chen Wang, LEC001, cwang662@wisc.edu
 
 	4. Tianyi Zhao, LEC001, tzhao86@wisc.edu
 
