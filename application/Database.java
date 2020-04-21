@@ -1,5 +1,11 @@
-/**
+/*
+ * GUI.java created by Yifei Miao in Milk Weight project.
  *
+ * Author: Yifei Miao (ymiao29@wisc.edu) Date: 2020/04/21 Version : 1.0.0
+ *
+ * Course: COMPSCI 400 Lecture Number: 001 Semester: Spring 2020
+ *
+ * Collaborators: Tianyi Zhao, Chen Wang
  */
 package application;
 
@@ -459,7 +465,20 @@ public class Database {
 		}
 		Collections.sort(result);
 		return result;
+	}
 
+	/*
+	 * Return a list contains all farmIDs in ascending order.
+	 */
+	public List<Integer> getMonthListOfAYear(int year) {
+		List<Integer> result = new ArrayList<>();
+		for (int e : this.databaseUsingMonth.keySet()) {
+			if (e / 100 == year) {
+				result.add(e % 100);
+			}
+		}
+		Collections.sort(result);
+		return result;
 	}
 
 	/*
@@ -474,9 +493,30 @@ public class Database {
 		}
 		Collections.sort(result);
 		return result;
-
 	}
 
+	/*
+	 * Return a list contains all years of a farm in ascending order.
+	 */
+	public List<Integer> getYearListOfAFarm(String farmID) {
+		List<Integer> result = new ArrayList<>();
+		for (int e : this.databaseUsingMonth.keySet()) {
+			if (!result.contains(e / 100)) {
+				for (OneRecord r : this.databaseUsingMonth.get(e)) {
+					if (r.getFarmID().equals(farmID)) {
+						result.add(e / 100);
+						break;
+					}
+				}
+			}
+		}
+		Collections.sort(result);
+		return result;
+	}
+
+	/*
+	 * Return a list contains all dates in the database in ascending order.
+	 */
 	public List<Integer> getAllDates() {
 		List<Integer> result = new ArrayList<Integer>();
 		for (OneRecord e : this.getAllRecords()) {

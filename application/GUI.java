@@ -1,10 +1,14 @@
-/**
+/*
+ * GUI.java created by Yifei Miao in Milk Weight project.
+ *
+ * Author: Yifei Miao (ymiao29@wisc.edu) Date: 2020/04/21 Version : 1.0.0
+ *
+ * Course: COMPSCI 400 Lecture Number: 001 Semester: Spring 2020
  *
  */
 package application;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -79,7 +83,7 @@ public class GUI extends Application {
 	private List<List<OneRecord>> tableListHistory;
 	private FileManager fileManager;
 	private Label recordsCount, farmCount, weightCount, daysCount, earliestDate, latestDate;
-	private int historyIndicator;
+	private int imageIndicator, historyIndicator;
 	private Button fileOpenBtn, fileClearBtn, deleteButton, deleteAllButton, unDoButton, reDoButton, nextBtn,
 			getButton1, getButton2, getButton3, getButton4, output1, output2, output3, output4;
 	private TableView<OneRecord> tableView;
@@ -192,11 +196,24 @@ public class GUI extends Application {
 		rightTopSpace.setMinHeight(100);
 		rightTopSpace.setMinWidth(100);
 		rightTopSpace.setAlignment(Pos.TOP_CENTER);
-		Image image = new Image("file:images/Rin.jpg");
+		List<String> imagesName = new ArrayList<String>();
+		File imageFolder = new File("images");
+		File[] images = imageFolder.listFiles();
+		for (File e : images) {
+			String name = e.getName();
+			if (name.substring(name.length() - 3).toLowerCase().equals("jpg")
+					|| name.substring(name.length() - 3).toLowerCase().equals("png")) {
+				imagesName.add(e.getName());
+			}
+		}
+		Image image = new Image("file:images/" + imagesName.get(0));
 		ImageView imageView = new ImageView(image);
-		rightTopSpace.getChildren().addAll(imageView);
+		Button imageButton = new Button("", imageView);
 		imageView.setFitWidth(100);
 		imageView.setFitHeight(100);
+		imageButton.setPrefSize(100, 100);
+		imageButton.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, null, null)));
+		rightTopSpace.getChildren().addAll(imageButton);
 		Button addBtn = new Button("Add");
 		addBtn.setMinHeight(30);
 		addBtn.setMinWidth(100);
@@ -290,6 +307,13 @@ public class GUI extends Application {
 			}
 			enableButtons();
 			this.deleteButton.setDisable(true);
+		});
+		// Image button.
+		imageButton.setOnAction((e) -> {
+			imageIndicator++;
+			imageIndicator = imageIndicator % images.length;
+			Image tmpimage = new Image("file:images/" + images[imageIndicator].getName().toString());
+			imageView.setImage(tmpimage);
 		});
 		// Add button.
 		addBtn.setOnAction((ActionEvent e) -> {
@@ -608,6 +632,9 @@ public class GUI extends Application {
 		}
 	}
 
+	/*
+	 * Data display and output scene.
+	 */
 	private void DataDisplayScene(Stage primaryStage) {
 		// Layer.
 		VBox mainPane = new VBox();
@@ -638,11 +665,12 @@ public class GUI extends Application {
 		comboBoxFarm1.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
 			@Override
 			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+				comboBoxYear1.getItems().clear();
+				comboBoxYear1.getItems().addAll(database.getYearListOfAFarm(newValue.toString()));
 				comboBoxYear1.setDisable(false);
 			}
 		});
 		comboBoxYear1 = new ComboBox<Integer>();
-		comboBoxYear1.getItems().addAll(this.database.getYearList());
 		comboBoxYear1.setPromptText("Year");
 		comboBoxYear1.setPrefSize(125, 30);
 		comboBoxYear1.setDisable(true);
@@ -672,11 +700,12 @@ public class GUI extends Application {
 		comboBoxYear2.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
 			@Override
 			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+				comboBoxMonth2.getItems().clear();
+				comboBoxMonth2.getItems().addAll(database.getMonthListOfAYear(Integer.parseInt(newValue.toString())));
 				comboBoxMonth2.setDisable(false);
 			}
 		});
 		comboBoxMonth2 = new ComboBox<Integer>();
-		comboBoxMonth2.getItems().addAll(this.database.getMonthList());
 		comboBoxMonth2.setPromptText("Month");
 		comboBoxMonth2.setPrefSize(125, 30);
 		comboBoxMonth2.setDisable(true);
@@ -706,12 +735,13 @@ public class GUI extends Application {
 		comboBoxYear3.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
 			@Override
 			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+				comboBoxMonth3.getItems().clear();
+				comboBoxMonth3.getItems().addAll(database.getMonthListOfAYear(Integer.parseInt(newValue.toString())));
 				comboBoxMonth3.setDisable(false);
 				getButton3.setDisable(false);
 			}
 		});
 		comboBoxMonth3 = new ComboBox<Integer>();
-		comboBoxMonth3.getItems().addAll(this.database.getMonthList());
 		comboBoxMonth3.setPromptText("Month");
 		comboBoxMonth3.setPrefSize(125, 30);
 		comboBoxMonth3.setDisable(true);
@@ -794,19 +824,6 @@ public class GUI extends Application {
 		primaryStage.setScene(new Scene(mainPane, WINDOW_WIDTH, WINDOW_HEIGHT));
 
 		// Button Operations
-//		  comboBox.getSelectionModel().selectedItemProperty()
-//          .addListener(new ChangeListener<Object>() {
-//
-//              @Override
-//              public void changed(ObservableValue observable,
-//                      Object oldValue, Object newValue) {
-//                  Image tmpimage = new Image(
-//                          "file:images/" + newValue.toString());
-//                  imageView.setImage(tmpimage);
-//                  imageView.setFitWidth(200);
-//                  imageView.setFitHeight(200);
-//              }
-//          });
 		// getButton1
 		getButton1.setOnAction((ActionEvent e) -> {
 			if ((!comboBoxFarm1.getValue().equals("")) && comboBoxYear1.getValue() != null) {
@@ -1085,6 +1102,9 @@ public class GUI extends Application {
 		getButton1.requestFocus();
 	}
 
+	/*
+	 * Return correspondent string according to given month
+	 */
 	private String monthTrans(int month) {
 		switch (month) {
 		case 1:
@@ -1117,6 +1137,9 @@ public class GUI extends Application {
 		}
 	}
 
+	/*
+	 * Given a list of records, sort the list according to farmID dictionary order.
+	 */
 	private void sortUsingIDUp(List<OneRecord> list) {
 		List<OneRecord> tmp = new ArrayList<OneRecord>();
 		List<String> nameList = new ArrayList<String>();
@@ -1137,18 +1160,22 @@ public class GUI extends Application {
 		list.addAll(tmp);
 	}
 
+	/*
+	 * Choose and create a file and output content into it.
+	 */
 	private void outputFile(Stage primaryStage, String name, String content) {
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 		File file = directoryChooser.showDialog(primaryStage);
-		String path = file.getPath() + "\\" + name;
-		try {
-			PrintWriter out = new PrintWriter(new FileWriter(new File(path)));
-			out.print(content);
-			out.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (file != null || !file.getPath().equals("")) {
+			String path = file.getPath() + "\\" + name;
+			try {
+				PrintWriter out = new PrintWriter(new FileWriter(new File(path)));
+				out.print(content);
+				out.close();
+				popUpWindow("SUCCESS", "Successfully output data into " + path);
+			} catch (IOException e) {
+				errorWindow("Error: not able to write data into " + path);
+			}
 		}
 	}
 }
