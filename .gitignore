@@ -1,6 +1,4 @@
 *.zip
 /Makefile
 /milkweight
-/MANIFEST.MF
-/push.sh
 /milkweight.bat
