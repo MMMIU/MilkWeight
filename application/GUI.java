@@ -50,6 +50,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 /**
  * @author Yifei Miao
@@ -73,6 +74,8 @@ public class GUI extends Application {
 	private static final int ADDWIDOW_HEIGHT = 35;
 	private static final int ERRORWIDOW_HEIGHT = 200;
 	// Private members.
+	private FileManager fileManager;
+	private FileOutputContentGenerator outputer;
 	private static final String APP_TITLE = "Milk Weight Manager-Ateam 37";
 	private static final String ADDER_TITLE = "Multiple Records Adder";
 	private static final String ERROR_TITLE = "ERROR";
@@ -81,17 +84,16 @@ public class GUI extends Application {
 	private List<Database> dataBaseHistory;
 	private ObservableList<OneRecord> tableList;
 	private List<List<OneRecord>> tableListHistory;
-	private FileManager fileManager;
 	private Label recordsCount, farmCount, weightCount, daysCount, earliestDate, latestDate;
-	private int imageIndicator, historyIndicator;
 	private Button fileOpenBtn, fileClearBtn, deleteButton, deleteAllButton, unDoButton, reDoButton, nextBtn,
 			getButton1, getButton2, getButton3, getButton4, output1, output2, output3, output4;
 	private TableView<OneRecord> tableView;
 	private TextField searchBoxTextField;
 	private TextArea textArea;
 	private ComboBox<Integer> comboBoxYear1, comboBoxMonth2, comboBoxMonth3, comboBoxRange1, comboBoxRange2;
-	private String output1String, output2String, output3String, output4String;
+	private String output1Content, output2String, output3String, output4String;
 	private String output1Name, output2Name, output3Name, output4Name;
+	private int imageIndicator, historyIndicator;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -103,12 +105,14 @@ public class GUI extends Application {
 		this.tableListHistory.add(new ArrayList<OneRecord>());
 		this.historyIndicator = 0;
 		this.fileManager = new FileManager(this.database);
+		this.outputer = new FileOutputContentGenerator(database);
 		this.FileManagerScene(primaryStage);
 		primaryStage.setTitle(APP_TITLE);
 		primaryStage.setResizable(false);
 		primaryStage.show();
 	}
 
+	@SuppressWarnings("unchecked")
 	private void FileManagerScene(Stage primaryStage) {
 		// Main pane.
 		BorderPane pane = new BorderPane();
@@ -691,7 +695,7 @@ public class GUI extends Application {
 		// Line 2.
 		HBox line2 = new HBox(15);
 		line2.setPadding(new Insets(0, 0, 0, 10));
-		Label label2 = new Label("MONTHLY REPORT -- By farms for specified month and year:");
+		Label label2 = new Label("MONTHLY FARM REPORT -- By farms for specified month and year:");
 		label2.setPadding(new Insets(0, 0, 0, 10));
 		ComboBox<Integer> comboBoxYear2 = new ComboBox<Integer>();
 		comboBoxYear2.getItems().addAll(this.database.getYearList());
@@ -726,7 +730,7 @@ public class GUI extends Application {
 		// Line 3.
 		HBox line3 = new HBox(15);
 		line3.setPadding(new Insets(0, 0, 0, 10));
-		Label label3 = new Label("NET SALES REPORT -- Each farm's share of net sales: ");
+		Label label3 = new Label("ANNUAL/MONTHLY REPORT -- Each farm's share of net sales: ");
 		label3.setPadding(new Insets(0, 0, 0, 10));
 		ComboBox<Integer> comboBoxYear3 = new ComboBox<Integer>();
 		comboBoxYear3.getItems().addAll(this.database.getYearList());
@@ -800,7 +804,7 @@ public class GUI extends Application {
 		HBox clearBox = new HBox();
 		clearBox.setPrefSize(WINDOW_WIDTH / 2, 30);
 		clearBox.setPadding(new Insets(0, 10, 0, 0));
-		clearBox.setAlignment(Pos.TOP_RIGHT);
+		clearBox.setAlignment(Pos.TOP_CENTER);
 		Button clearBtn = new Button("Clear All");
 		clearBtn.setPrefSize(100, 20);
 		clearBox.getChildren().add(clearBtn);
@@ -826,253 +830,51 @@ public class GUI extends Application {
 		// Button Operations
 		// getButton1
 		getButton1.setOnAction((ActionEvent e) -> {
-			if ((!comboBoxFarm1.getValue().equals("")) && comboBoxYear1.getValue() != null) {
-				String farmID = comboBoxFarm1.getSelectionModel().getSelectedItem();
-				int year = comboBoxYear1.getSelectionModel().getSelectedItem();
-				List<List<OneRecord>> list = this.database.getAllRecordsInAYearOfAFarm(farmID, year);
-				boolean empty = true;
-				for (List<OneRecord> x : list) {
-					if (x.size() > 0) {
-						empty = false;
-						break;
-					}
-				}
-				if (!empty) {
-					this.textArea.clear();
-					this.output1String = "Min, max, average weight by month for " + farmID + " in " + year
-							+ ":\nMonth, min(percent), max(percent), average";
-					for (int i = 0; i < 12; i++) {
-						List<OneRecord> records = list.get(i);
-						int min = -1;
-						int max = -1;
-						double average = 0;
-						for (OneRecord r : records) {
-							if (min == -1 || r.getWeight() < min) {
-								min = r.getWeight();
-							}
-							if (max == -1 || r.getWeight() > max) {
-								max = r.getWeight();
-							}
-							average += r.getWeight();
-						}
-						if (min == -1) {
-							max = min = 0;
-						}
-						double minPercent = 100;
-						double maxPercent = 100;
-						if (average != 0) {
-							minPercent = 100 * min / average;
-							maxPercent = 100 * max / average;
-							average = average / records.size();
-						}
-						this.output1String += String.format("\n%3s, %d(%.3f), %d(%.3f), %.3f\n", (i + 1), min,
-								minPercent, max, maxPercent, average);
-						this.textArea.setText(output1String);
-					}
-					this.output1Name = "FARMREPORT-" + farmID + "-" + year + ".txt";
-					this.output1.setDisable(false);
-				} else {
-					errorWindow("Error: no record exists.");
-				}
-			} else {
-				errorWindow("Error: invalid input.");
-			}
+			String farmID = comboBoxFarm1.getSelectionModel().getSelectedItem();
+			int year = comboBoxYear1.getSelectionModel().getSelectedItem();
+			this.output1Content = outputer.farmReport(farmID, year);
+			this.output1.setDisable(false);
+			this.textArea.setText(output1Content);
+			output1Name = "Farm report-" + farmID + "-" + year + ".txt";
 		});
 		// getButton2
 		getButton2.setOnAction((ActionEvent e) -> {
-			if (comboBoxYear2.getValue() != null && comboBoxMonth2.getValue() != null) {
-				int year = comboBoxYear2.getSelectionModel().getSelectedItem();
-				int month = comboBoxMonth2.getSelectionModel().getSelectedItem() % 100;
-				List<OneRecord> list = this.database.getAllRecordsInAYear(year).get(month - 1);
-				if (list.size() >= 0) {
-					this.textArea.clear();
-					this.output2String = "Min, max, average weight for all farms in " + monthTrans(month) + ", " + year
-							+ ":\nFarm ID, min(date)(percent), max(date)(percent), average";
-					this.sortUsingIDUp(list);
-					while (list.size() > 0) {
-						OneRecord record = list.get(0);
-						list.remove(0);
-						int min = record.getWeight();
-						int minDate = record.getDate();
-						int max = record.getWeight();
-						int maxDate = record.getDate();
-						double average = record.getWeight();
-						List<OneRecord> tmp = new ArrayList<OneRecord>();
-						for (OneRecord r : list) {
-							if (r.getFarmID().equals(record.getFarmID())) {
-								if (r.getWeight() < min) {
-									min = r.getWeight();
-									minDate = r.getDate();
-								}
-								if (r.getWeight() > max) {
-									max = r.getWeight();
-									maxDate = r.getDate();
-								}
-								average += r.getWeight();
-								tmp.add(r);
-							}
-						}
-						double minPercent = 100;
-						double maxPercent = 100;
-						if (average != 0) {
-							minPercent = 100 * min / average;
-							maxPercent = 100 * max / average;
-						}
-						average = average / (tmp.size() + 1);
-						for (OneRecord r : tmp) {
-							list.remove(r);
-						}
-						this.output2String += String.format("\n%10s, %6d(%d)(%.3f), %6d(%d)(%.3f), %9.3f\n",
-								record.getFarmID(), min, minDate, minPercent, max, maxDate, maxPercent, average);
-						this.textArea.setText(output2String);
-					}
-					this.output2Name = "MONTHLYREPORT-" + year + "-" + month + ".txt";
-					this.output2.setDisable(false);
-				} else {
-					errorWindow("Error: no record exists.");
-				}
-			} else {
-				errorWindow("Error: invalid input.");
-			}
+			int year = comboBoxYear2.getSelectionModel().getSelectedItem();
+			int month = comboBoxMonth2.getSelectionModel().getSelectedItem() % 100;
+			this.output2String = outputer.monthlyFarmReport(year, month);
+			this.textArea.setText(output2String);
+			this.output2Name = "One month farm report-" + year + "-" + month + ".txt";
+			this.output2.setDisable(false);
 		});
 		// getButton3
 		getButton3.setOnAction((ActionEvent e) -> {
-			if (comboBoxYear3.getValue() != null && comboBoxMonth3.getValue() != null) {
+			if (comboBoxMonth3.getValue() != null) {
 				int year = comboBoxYear3.getSelectionModel().getSelectedItem();
 				int month = comboBoxMonth3.getSelectionModel().getSelectedItem() % 100;
-				List<OneRecord> list = this.database.getAllRecordsInAYear(year).get(month - 1);
-				if (list.size() >= 0) {
-					this.textArea.clear();
-					this.output3String = "Each farm's share (% of total weight of the month) of net sales in "
-							+ monthTrans(month) + ", " + year + ":\nFarm ID, total weight, share(%)";
-					this.sortUsingIDUp(list);
-					long totalWeight = 0;
-					for (OneRecord r : list) {
-						totalWeight += r.getWeight();
-					}
-					while (list.size() > 0) {
-						OneRecord record = list.get(0);
-						list.remove(0);
-						long farmTotal = record.getWeight();
-						List<OneRecord> tmp = new ArrayList<OneRecord>();
-						for (OneRecord r : list) {
-							if (r.getFarmID().equals(record.getFarmID())) {
-								farmTotal += r.getWeight();
-								tmp.add(r);
-							}
-						}
-						for (OneRecord r : tmp) {
-							list.remove(r);
-						}
-						double share = 100;
-						if (totalWeight != 0) {
-							share = farmTotal * 100.0 / totalWeight;
-						}
-
-						this.output3String += String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal,
-								share);
-						this.textArea.setText(this.output3String);
-					}
-					this.output3Name = "NETSALESREPORT-" + year + "-" + month + ".txt";
-					this.output3.setDisable(false);
-				} else {
-					errorWindow("Error: no record exists.");
-				}
-			} else if (comboBoxYear3.getValue() != null) {
-				int year = comboBoxYear3.getSelectionModel().getSelectedItem();
-				List<List<OneRecord>> inlist = this.database.getAllRecordsInAYear(year);
-				List<OneRecord> list = new ArrayList<OneRecord>();
-				for (List<OneRecord> li : inlist) {
-					for (OneRecord r : li) {
-						list.add(r);
-					}
-				}
-				sortUsingIDUp(list);
-				if (list.size() >= 0) {
-					this.textArea.clear();
-					this.output3String = "Each farm's share (% of total weight of the year) of net sales in " + year
-							+ ":\nFarm ID, total weight, share(%)";
-					long totalWeight = 0;
-					for (OneRecord r : list) {
-						totalWeight += r.getWeight();
-					}
-					while (list.size() > 0) {
-						OneRecord record = list.get(0);
-						list.remove(0);
-						long farmTotal = record.getWeight();
-						List<OneRecord> tmp = new ArrayList<OneRecord>();
-						for (OneRecord r : list) {
-							if (r.getFarmID().equals(record.getFarmID())) {
-								farmTotal += r.getWeight();
-								tmp.add(r);
-							}
-						}
-						for (OneRecord r : tmp) {
-							list.remove(r);
-						}
-						double share = 100;
-						if (totalWeight != 0) {
-							share = farmTotal * 100.0 / totalWeight;
-						}
-
-						this.output3String += String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal,
-								share);
-						this.textArea.setText(this.output3String);
-					}
-					this.output3Name = "NETSALESREPORT-" + year + ".txt";
-					this.output3.setDisable(false);
-				} else {
-					errorWindow("Error: no record exists.");
-				}
+				this.output3String = outputer.monthlyReportYM(year, month);
+				this.textArea.setText(this.output3String);
+				this.output3Name = "Monthly report-" + year + "-" + month + ".txt";
+				this.output3.setDisable(false);
 			} else {
-				errorWindow("Error: invalid input.");
+				int year = comboBoxYear3.getSelectionModel().getSelectedItem();
+				this.output3String = outputer.annualReportY(year);
+				this.textArea.setText(this.output3String);
+				this.output3Name = "Annual report-" + year + ".txt";
+				this.output3.setDisable(false);
 			}
 		});
 		// getButton4
 		getButton4.setOnAction((ActionEvent e) -> {
 			int startDate = comboBoxRange1.getSelectionModel().getSelectedItem();
 			int endDate = comboBoxRange2.getSelectionModel().getSelectedItem();
-			List<OneRecord> list = this.database.getAllRecordsInDateRange(startDate, endDate);
-			sortUsingIDUp(list);
-			if (list.size() >= 0) {
-				this.textArea.clear();
-				this.output4String = "Total milk weight per farm and the percentage of the total for each farm between "
-						+ startDate + " and " + endDate + ":\nFarm ID, total weight, share(%)";
-				long totalWeight = 0;
-				for (OneRecord r : list) {
-					totalWeight += r.getWeight();
-				}
-				while (list.size() > 0) {
-					OneRecord record = list.get(0);
-					list.remove(0);
-					long farmTotal = record.getWeight();
-					List<OneRecord> tmp = new ArrayList<OneRecord>();
-					for (OneRecord r : list) {
-						if (r.getFarmID().equals(record.getFarmID())) {
-							farmTotal += r.getWeight();
-							tmp.add(r);
-						}
-					}
-					for (OneRecord r : tmp) {
-						list.remove(r);
-					}
-					double share = 100;
-					if (totalWeight != 0) {
-						share = farmTotal * 100.0 / totalWeight;
-					}
-
-					this.output4String += String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal, share);
-					this.textArea.setText(this.output4String);
-				}
-				this.output4Name = "DATERANGEREPORT-" + startDate + "-" + endDate + ".txt";
-				this.output4.setDisable(false);
-			} else {
-				errorWindow("Error: no record exists.");
-			}
+			this.output4String = outputer.dateRangeReport(startDate, endDate);
+			this.textArea.setText(this.output4String);
+			this.output4Name = "Date range report-" + startDate + "-" + endDate + ".txt";
+			this.output4.setDisable(false);
 		});
 		// Output1 Button
 		output1.setOnAction((ActionEvent e) -> {
-			this.outputFile(primaryStage, this.output1Name, output1String);
+			this.outputFile(primaryStage, this.output1Name, output1Content);
 		});
 		// Output2 Button
 		output2.setOnAction((ActionEvent e) -> {
@@ -1103,70 +905,12 @@ public class GUI extends Application {
 	}
 
 	/*
-	 * Return correspondent string according to given month
-	 */
-	private String monthTrans(int month) {
-		switch (month) {
-		case 1:
-			return "Januarary";
-		case 2:
-			return "Feburary";
-		case 3:
-			return "March";
-		case 4:
-			return "April";
-		case 5:
-			return "May";
-		case 6:
-			return "June";
-		case 7:
-			return "July";
-		case 8:
-			return "August";
-		case 9:
-			return "September";
-		case 10:
-			return "October";
-		case 11:
-			return "November";
-		case 12:
-			return "December";
-
-		default:
-			return "Error";
-		}
-	}
-
-	/*
-	 * Given a list of records, sort the list according to farmID dictionary order.
-	 */
-	private void sortUsingIDUp(List<OneRecord> list) {
-		List<OneRecord> tmp = new ArrayList<OneRecord>();
-		List<String> nameList = new ArrayList<String>();
-		for (OneRecord r : list) {
-			if (!nameList.contains(r.getFarmID())) {
-				nameList.add(r.getFarmID());
-			}
-		}
-		Collections.sort(nameList);
-		for (String e : nameList) {
-			for (OneRecord r : list) {
-				if (r.getFarmID().equals(e)) {
-					tmp.add(r);
-				}
-			}
-		}
-		list.clear();
-		list.addAll(tmp);
-	}
-
-	/*
 	 * Choose and create a file and output content into it.
 	 */
 	private void outputFile(Stage primaryStage, String name, String content) {
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 		File file = directoryChooser.showDialog(primaryStage);
-		if (file != null || !file.getPath().equals("")) {
+		if (file != null && !file.getPath().equals("")) {
 			String path = file.getPath() + "\\" + name;
 			try {
 				PrintWriter out = new PrintWriter(new FileWriter(new File(path)));
@@ -1178,4 +922,5 @@ public class GUI extends Application {
 			}
 		}
 	}
+	
 }
