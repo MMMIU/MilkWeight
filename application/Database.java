@@ -2,6 +2,8 @@
  * GUI.java created by Yifei Miao in Milk Weight project.
  *
  * Author: Yifei Miao (ymiao29@wisc.edu) Date: 2020/04/21 Version : 1.0.0
+ * 
+ * Date 2020/4/28 Version: 1.1.0
  *
  * Course: COMPSCI 400 Lecture Number: 001 Semester: Spring 2020
  *
@@ -66,18 +68,20 @@ public class Database {
 	}
 
 	/*
-	 * Add a record to the database.
+	 * Add a record to the database. If duplicate record, add weight together.
 	 *
 	 * @param record
 	 *
 	 */
 	public void add(OneRecord record) {
+		// check existence.
 		if (!this.databaseUsingID.containsKey(record.getFarmID().toUpperCase())) {
 			this.databaseUsingID.put(record.getFarmID(), new ArrayList<OneRecord>());
 		}
 		if (!this.databaseUsingMonth.containsKey(record.getDate() / 100)) {
 			this.databaseUsingMonth.put(record.getDate() / 100, new ArrayList<OneRecord>());
 		}
+		// Add to database.
 		for (OneRecord r : this.databaseUsingID.get(record.getFarmID().toUpperCase())) {
 			if (r.getDate() == record.getDate()) {
 				this.totalWeight += record.getWeight();
@@ -119,6 +123,7 @@ public class Database {
 	 *
 	 */
 	public boolean remove(OneRecord record) {
+		// Check existence.
 		record.setFarmID(record.getFarmID().toUpperCase());
 		if (!this.databaseUsingID.containsKey(record.getFarmID())) {
 			return false;
@@ -134,6 +139,7 @@ public class Database {
 				return false;
 			}
 		}
+		// remove record from to maps.
 		for (int i = 0; i < this.databaseUsingID.get(record.getFarmID()).size(); i++) {
 			if (this.databaseUsingID.get(record.getFarmID()).get(i).getDate() == record.getDate()) {
 				this.databaseUsingID.get(record.getFarmID()).remove(i);
@@ -141,8 +147,7 @@ public class Database {
 			}
 		}
 		for (int i = 0; i < this.databaseUsingMonth.get(record.getDate() / 100).size(); i++) {
-			if (this.databaseUsingMonth.get(record.getDate() / 100).get(i).getFarmID() == record.getFarmID()
-					.toUpperCase()) {
+			if (this.databaseUsingMonth.get(record.getDate() / 100).get(i).getFarmID() == record.getFarmID()) {
 				this.databaseUsingMonth.get(record.getDate() / 100).remove(i);
 				break;
 			}
@@ -151,6 +156,9 @@ public class Database {
 		return true;
 	}
 
+	/*
+	 * Check if record exist in the database.
+	 */
 	public boolean contains(OneRecord record) {
 		if (this.databaseUsingID.containsKey(record.getFarmID())) {
 			for (OneRecord e : this.databaseUsingID.get(record.getFarmID())) {
@@ -197,7 +205,7 @@ public class Database {
 		List<OneRecord> result = new ArrayList<OneRecord>();
 		Set<Integer> keys = this.databaseUsingMonth.keySet();
 		for (int e : keys) {
-			if (e / 100 == yearMonth) {
+			if (e == yearMonth) {
 				for (OneRecord r : this.databaseUsingMonth.get(e)) {
 					result.add(r);
 				}
@@ -242,40 +250,6 @@ public class Database {
 	}
 
 	/*
-	 * Return a list of all records of a farm. If farm does not exist, return an
-	 * empty list. Return empty list if no record.
-	 *
-	 */
-	public List<OneRecord> getAllRecordsOfAFarm(String farmID) {
-		List<OneRecord> result = new ArrayList<OneRecord>();
-		Set<String> keys = this.databaseUsingID.keySet();
-		for (String e : keys) {
-			if (e == farmID) {
-				for (OneRecord r : this.databaseUsingID.get(e)) {
-					result.add(r);
-				}
-			}
-		}
-		return result;
-	}
-
-	/*
-	 * Return a list of all records of a farm in a month. Return empty list if no
-	 * record.
-	 *
-	 */
-	public List<OneRecord> getAllRecordsInAMonthOfAFarm(String farmID, int yearMonth) {
-		List<OneRecord> result = new ArrayList<OneRecord>();
-		List<OneRecord> listOfAMonth = this.databaseUsingMonth.get(yearMonth);
-		for (OneRecord r : listOfAMonth) {
-			if (r.getFarmID().equals(farmID)) {
-				result.add(r);
-			}
-		}
-		return result;
-	}
-
-	/*
 	 * Return a list of all records of a farm in a year hashed by month. Return list
 	 * with 12 empty sublist if no record.
 	 *
@@ -295,152 +269,6 @@ public class Database {
 			}
 		}
 		return result;
-	}
-
-	/*
-	 * Return average weight of all months in a year. Return 0 if no record in that
-	 * year.
-	 *
-	 */
-	public long getMonthlyAverageOfAYear(int year) {
-		long sum = 0;
-		int numOfData = 0;
-		for (int i = 1; i < 13; i++) {
-			for (OneRecord e : this.databaseUsingMonth.get(i)) {
-				if (e.getDate() / 10000 == year) {
-					sum += e.getWeight();
-					numOfData++;
-				}
-			}
-		}
-		return sum / numOfData;
-	}
-
-	/*
-	 * Return smallest weight of all months in a year. Return (0,0) if no record in
-	 * that year. Format:("",202004,10000).
-	 *
-	 */
-	public OneRecord getMonthlyMinOfAYear(int year) {
-		OneRecord minMonth = new OneRecord("", 0, 0);
-		int sum = 0;
-		for (int i = 1; i < 13; i++) {
-			for (OneRecord e : this.databaseUsingMonth.get(i)) {
-				if ((int) (e.getDate() / 10000) == year)
-					sum += e.getWeight();
-			}
-			if (sum < minMonth.getWeight()) {
-				minMonth = new OneRecord("", year * 100 + i, sum);
-			}
-			sum = 0;
-		}
-		return minMonth;
-	}
-
-	/*
-	 * Return largest weight of all months in a year. Return (0,0) if no record in
-	 * that year. Format:("",202004,10000).
-	 *
-	 */
-	public OneRecord getMonthlyMaxOfAYear(int year) {
-		OneRecord maxMonth = new OneRecord("", 0, 0);
-		int sum = 0;
-		for (int i = 1; i < 13; i++) {
-			for (OneRecord e : this.databaseUsingMonth.get(i)) {
-				if ((int) (e.getDate() / 10000) == year)
-					sum += e.getWeight();
-			}
-			if (sum > maxMonth.getWeight()) {
-				maxMonth = new OneRecord("", year * 100 + i, sum);
-			}
-			sum = 0;
-		}
-		return maxMonth;
-	}
-
-	/*
-	 * Return average weight of all records of a farm.
-	 *
-	 */
-	public long getAverageOfAFarm(String farmID) {
-		long sum = 0;
-		int numOfData = 0;
-		for (OneRecord e : this.databaseUsingID.get(farmID)) {
-			sum += e.getWeight();
-			numOfData++;
-		}
-		return sum / numOfData;
-	}
-
-	/*
-	 * Return the record with smallest weight of all records of a farm. Return
-	 * ("null","0","0") if no record of that farm.
-	 *
-	 */
-	public OneRecord getMinOfAFarm(String farmID) {
-		OneRecord minRecord = new OneRecord("null", 0, 0);
-		for (OneRecord e : this.databaseUsingID.get(farmID)) {
-			if (e.getWeight() < minRecord.getWeight())
-				minRecord = e;
-		}
-		return minRecord;
-	}
-
-	/*
-	 * Return the record with largest weight of all records of a farm. Return
-	 * ("null","0","0") if no record of that farm.
-	 *
-	 */
-	public OneRecord getMaxOfAFarm(String farmID) {
-		OneRecord maxRecord = new OneRecord("null", 0, 0);
-		for (OneRecord e : this.databaseUsingID.get(farmID)) {
-			if (e.getWeight() > maxRecord.getWeight())
-				maxRecord = e;
-		}
-		return maxRecord;
-	}
-
-	/*
-	 * Return average weight of all records in a date range.
-	 *
-	 */
-	public int getAverageInDateRange(int startDate, int endDate) {
-		List<OneRecord> givenRangeRecords = getAllRecordsInDateRange(startDate, endDate);
-		int sum = 0;
-		for (OneRecord e : givenRangeRecords) {
-			sum += e.getWeight();
-		}
-		return sum / givenRangeRecords.size();
-	}
-
-	/*
-	 * Return the record with smallest weight of all records in a date range. Return
-	 * ("null","0","0") if no record in that date range. that year.
-	 *
-	 */
-	public OneRecord getMinInDateRange(int startDate, int endDate) {
-		List<OneRecord> givenRangeRecords = getAllRecordsInDateRange(startDate, endDate);
-		OneRecord minRecord = new OneRecord("", 0, 0);
-		for (OneRecord e : givenRangeRecords) {
-			if (e.getWeight() < minRecord.getWeight())
-				minRecord = e;
-		}
-		return minRecord;
-	}
-
-	/*
-	 * Return the record with largest weight of all records in a date range. Return
-	 * ("null","0","0") if no record in that date range.
-	 *
-	 */
-	public OneRecord getMaxInDateRange(int startDate, int endDate) {
-		List<OneRecord> givenRangeRecords = getAllRecordsInDateRange(startDate, endDate);
-		OneRecord maxRecord = new OneRecord("", 0, 0);
-		for (OneRecord e : givenRangeRecords) {
-			if (e.getWeight() > maxRecord.getWeight())
-				maxRecord = e;
-		}
-		return maxRecord;
 	}
 
 	/*

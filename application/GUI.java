@@ -2,6 +2,8 @@
  * GUI.java created by Yifei Miao in Milk Weight project.
  *
  * Author: Yifei Miao (ymiao29@wisc.edu) Date: 2020/04/21 Version : 1.0.0
+ * 
+ * Date 2020/4/28 Version: 1.1.0
  *
  * Course: COMPSCI 400 Lecture Number: 001 Semester: Spring 2020
  *
@@ -57,22 +59,27 @@ import javafx.stage.StageStyle;
  *
  */
 public class GUI extends Application {
-	// Widths.
+	// Final dimension members.
 	private static final int WINDOW_WIDTH = 900;
 	private static final int LEFTBOX_WIDTH = 100;
 	private static final int CENTERBOX_WIDTH = 650;
 	private static final int SEARCHBARBUTTON_WIDTH = 75;
 	private static final int RIGHTBOX_WIDTH = 150;
 	private static final int ADDWIDOW_WIDTH = 900;
-	private static final int ERRORWIDOW_WIDTH = 250;
-	// Heights.
+	private static final int POPWIDOW_WIDTH = 250;
 	private static final int WINDOW_HEIGHT = 500;
 	private static final int PROGRESSBAR_Height = 30;
 	private static final int TOPBOX_HEIGHT = 40;
 	private static final int CENTERBOX_HEIGHT = 360;
 	private static final int BUTTOMBOX_HEIGHT = 70;
 	private static final int ADDWIDOW_HEIGHT = 35;
-	private static final int ERRORWIDOW_HEIGHT = 200;
+	private static final int POPWIDOW_HEIGHT = 200;
+	private static final int IMAGEVIEW_WIDTH = 100;
+	private static final int IMAGEVIEW_HEIGHT = 100;
+	private static final int BUTTONORMAL_WIDTH = 100;
+	private static final int BUTTONORMAL_HEIGHT = 30;
+	private static final int TABELCOLUMNWIDTH = 200;
+
 	// Private members.
 	private FileManager fileManager;
 	private FileOutputContentGenerator outputer;
@@ -91,8 +98,8 @@ public class GUI extends Application {
 	private TextField searchBoxTextField;
 	private TextArea textArea;
 	private ComboBox<Integer> comboBoxYear1, comboBoxMonth2, comboBoxMonth3, comboBoxRange1, comboBoxRange2;
-	private String output1Content, output2String, output3String, output4String;
-	private String output1Name, output2Name, output3Name, output4Name;
+	private String output1Content, output2String, output3String, output4String, output1Name, output2Name, output3Name,
+			output4Name;
 	private int imageIndicator, historyIndicator;
 
 	@Override
@@ -151,6 +158,7 @@ public class GUI extends Application {
 		// FileChooser.
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Choose files to open");
+		fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("CSV", "*.csv"));
 		// Button to open fileChooser.
 		Button fileChooserBtn = new Button("Choose");
 		fileChooserBtn.setMinWidth(SEARCHBARBUTTON_WIDTH);
@@ -167,16 +175,17 @@ public class GUI extends Application {
 		tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		tableView.setMinWidth(CENTERBOX_WIDTH);
 		tableView.setMinHeight(CENTERBOX_HEIGHT - 50);
+		// Add columns.
 		TableColumn<OneRecord, String> nameCol = new TableColumn<>("Farm ID");
-		nameCol.setMinWidth(200);
+		nameCol.setMinWidth(TABELCOLUMNWIDTH);
 		nameCol.setCellValueFactory(new PropertyValueFactory<>("farmID"));
 
 		TableColumn<OneRecord, Integer> dateCol = new TableColumn<>("Date");
-		dateCol.setMinWidth(200);
+		dateCol.setMinWidth(TABELCOLUMNWIDTH);
 		dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
 
 		TableColumn<OneRecord, Integer> weightCol = new TableColumn<>("Weight");
-		weightCol.setMinWidth(200);
+		weightCol.setMinWidth(TABELCOLUMNWIDTH);
 		weightCol.setCellValueFactory(new PropertyValueFactory<>("weight"));
 
 		tableView.setItems(this.tableList);
@@ -196,43 +205,49 @@ public class GUI extends Application {
 		VBox rightVBox = new VBox(15);
 		rightVBox.setMinWidth(RIGHTBOX_WIDTH);
 		rightVBox.setAlignment(Pos.TOP_CENTER);
+		// Top space and image.
 		VBox rightTopSpace = new VBox();
 		rightTopSpace.setMinHeight(100);
 		rightTopSpace.setMinWidth(100);
 		rightTopSpace.setAlignment(Pos.TOP_CENTER);
 		List<String> imagesName = new ArrayList<String>();
+		// Get images from image folder.
 		File imageFolder = new File("images");
 		File[] images = imageFolder.listFiles();
 		for (File e : images) {
 			String name = e.getName();
-			if (name.substring(name.length() - 3).toLowerCase().equals("jpg")
-					|| name.substring(name.length() - 3).toLowerCase().equals("png")) {
+			if (name.substring(name.length() - 4).toLowerCase().equals(".jpg")
+					|| name.substring(name.length() - 4).toLowerCase().equals(".png")) {
 				imagesName.add(e.getName());
 			}
 		}
-		Image image = new Image("file:images/" + imagesName.get(0));
+		// Add image to pane.
+		Image image = null;
+		if (imagesName.size() > 0) {
+			image = new Image("file:images/" + imagesName.get(0));
+		}
 		ImageView imageView = new ImageView(image);
 		Button imageButton = new Button("", imageView);
-		imageView.setFitWidth(100);
-		imageView.setFitHeight(100);
-		imageButton.setPrefSize(100, 100);
+		if (imagesName.size() == 0) {
+			imageButton.setDisable(true);
+		}
+		imageView.setFitWidth(IMAGEVIEW_WIDTH);
+		imageView.setFitHeight(IMAGEVIEW_HEIGHT);
+		imageButton.setPrefSize(IMAGEVIEW_WIDTH, IMAGEVIEW_HEIGHT);
 		imageButton.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, null, null)));
 		rightTopSpace.getChildren().addAll(imageButton);
+		// Buttons.
 		Button addBtn = new Button("Add");
 		addBtn.setMinHeight(30);
 		addBtn.setMinWidth(100);
 		deleteButton = new Button("Delete");
-		deleteButton.setMinHeight(30);
-		deleteButton.setMinWidth(100);
+		deleteButton.setPrefSize(BUTTONORMAL_WIDTH, BUTTONORMAL_HEIGHT);
 		deleteAllButton = new Button("Delete All");
-		deleteAllButton.setMinHeight(30);
-		deleteAllButton.setMinWidth(100);
+		deleteAllButton.setPrefSize(BUTTONORMAL_WIDTH, BUTTONORMAL_HEIGHT);
 		unDoButton = new Button("Undo");
-		unDoButton.setMinHeight(30);
-		unDoButton.setMinWidth(100);
+		unDoButton.setPrefSize(BUTTONORMAL_WIDTH, BUTTONORMAL_HEIGHT);
 		reDoButton = new Button("Redo");
-		reDoButton.setMinHeight(30);
-		reDoButton.setMinWidth(100);
+		reDoButton.setPrefSize(BUTTONORMAL_WIDTH, BUTTONORMAL_HEIGHT);
 		rightVBox.getChildren().addAll(rightTopSpace, addBtn, deleteButton, deleteAllButton, unDoButton, reDoButton);
 		// Add rightVBox to the pane.
 		pane.setRight(rightVBox);
@@ -242,11 +257,9 @@ public class GUI extends Application {
 		buttomHBox.setMinHeight(BUTTOMBOX_HEIGHT);
 		buttomHBox.setPadding(new Insets(0, 10, 10, 0));
 		Button exitBtn = new Button("Exit");
-		exitBtn.setMinHeight(30);
-		exitBtn.setMinWidth(100);
+		exitBtn.setPrefSize(BUTTONORMAL_WIDTH, BUTTONORMAL_HEIGHT);
 		nextBtn = new Button("Next");
-		nextBtn.setMinHeight(30);
-		nextBtn.setMinWidth(100);
+		nextBtn.setPrefSize(BUTTONORMAL_WIDTH, BUTTONORMAL_HEIGHT);
 		TEAMLABEL.setPadding(new Insets(0, 390, 0, 0));
 		TEAMLABEL.setFont(new Font("Arial", 10));
 		buttomHBox.getChildren().addAll(TEAMLABEL, exitBtn, nextBtn);
@@ -298,7 +311,7 @@ public class GUI extends Application {
 				List<File> errorFiles = this.fileManager.addFiles(files);
 				refreshStats();
 				this.refreshTable();
-				if (errorFiles.size() == 0) {
+				if (errorFiles.size() < files.size()) {
 					this.historyManager(true, false, false);
 				}
 				if (errorFiles.size() > 0) {
@@ -313,16 +326,16 @@ public class GUI extends Application {
 			enableButtons();
 			this.deleteButton.setDisable(true);
 		});
-		// Image button.
+		// Image button used to change image.
 		imageButton.setOnAction((e) -> {
 			imageIndicator++;
-			imageIndicator = imageIndicator % images.length;
-			Image tmpimage = new Image("file:images/" + images[imageIndicator].getName().toString());
+			imageIndicator = imageIndicator % imagesName.size();
+			Image tmpimage = new Image("file:images/" + imagesName.get(imageIndicator));
 			imageView.setImage(tmpimage);
 		});
 		// Add button.
 		addBtn.setOnAction((ActionEvent e) -> {
-			this.addBtnWindow(primaryStage);
+			this.addWindow(primaryStage);
 			enableButtons();
 		});
 		// Delete button.
@@ -408,7 +421,10 @@ public class GUI extends Application {
 		}
 	}
 
-	private void addBtnWindow(Stage primaryStage) {
+	/*
+	 * Pop up window for manually add records.
+	 */
+	private void addWindow(Stage primaryStage) {
 		// HBox panel.
 		HBox hBox = new HBox(15);
 		hBox.setMinHeight(ADDWIDOW_HEIGHT);
@@ -453,6 +469,7 @@ public class GUI extends Application {
 				OneRecord record = this.fileManager.generateRecordUsingData(data);
 				this.database.add(record);
 				this.tableList.add(0, record);
+				historyManager(true, false, false);
 			} else {
 				this.errorWindow("Incorrect format of data, please check.");
 			}
@@ -471,24 +488,19 @@ public class GUI extends Application {
 	private void popUpWindow(String title, String message) {
 		VBox vBox = new VBox(10);
 		vBox.setAlignment(Pos.TOP_CENTER);
-		// Scroll Pane
-		ScrollPane scrollPane = new ScrollPane();
-		scrollPane.setPrefSize(ERRORWIDOW_WIDTH, ERRORWIDOW_HEIGHT - 45);
-		// Top space.
-		VBox top = new VBox();
-		top.setMinHeight(ERRORWIDOW_HEIGHT / 6);
-		// Message label.
-		Label messageLabel = new Label(message);
-		messageLabel.setAlignment(Pos.CENTER);
+		// Text area.
+		TextArea textArea = new TextArea(message);
+		textArea.setPrefSize(POPWIDOW_WIDTH, POPWIDOW_HEIGHT - 45);
+		textArea.setWrapText(true);
+		textArea.setEditable(false);
 		// OK button.
 		Button okBtn = new Button("OK");
 		okBtn.setAlignment(Pos.CENTER);
 		okBtn.setMinWidth(75);
 		Stage errorWindowStage = new Stage();
-		scrollPane.setContent(messageLabel);
-		vBox.getChildren().addAll(scrollPane, okBtn);
+		vBox.getChildren().addAll(textArea, okBtn);
 		// Add to scene and stage.
-		Scene mainScene = new Scene(vBox, ERRORWIDOW_WIDTH, ERRORWIDOW_HEIGHT);
+		Scene mainScene = new Scene(vBox, POPWIDOW_WIDTH, POPWIDOW_HEIGHT);
 		errorWindowStage.initModality(Modality.APPLICATION_MODAL);
 		errorWindowStage.setScene(mainScene);
 		errorWindowStage.setTitle(title);
@@ -519,14 +531,12 @@ public class GUI extends Application {
 		// First step.
 		Label label1 = new Label();
 		label1.setText("1.Input");
-		label1.setMinWidth(100);
-		label1.setMinHeight(PROGRESSBAR_Height);
+		label1.setPrefSize(100, PROGRESSBAR_Height);
 		label1.setAlignment(Pos.CENTER);
 		// Second step.
 		Label label2 = new Label();
 		label2.setText("2.Display & Output");
-		label2.setMinWidth(150);
-		label2.setMinHeight(PROGRESSBAR_Height);
+		label2.setPrefSize(150, PROGRESSBAR_Height);
 		label2.setAlignment(Pos.CENTER);
 		// Step selection.
 		if (page == 1) {
@@ -559,6 +569,7 @@ public class GUI extends Application {
 	 * Manage historical version of the program.
 	 */
 	private void historyManager(boolean addHistory, boolean undo, boolean redo) {
+		// Add history.
 		if (addHistory) {
 			while (this.dataBaseHistory.size() > this.historyIndicator + 1) {
 				this.dataBaseHistory.remove(this.dataBaseHistory.size() - 1);
@@ -576,11 +587,15 @@ public class GUI extends Application {
 			this.dataBaseHistory.add(tmpDatabase);
 			this.tableListHistory.add(tmpList);
 			enableButtons();
-		} else if (undo) {
+		}
+		// Undo.
+		else if (undo) {
 			this.historyIndicator--;
 			matchVersion();
 			enableButtons();
-		} else if (redo) {
+		}
+		// Redo.
+		else if (redo) {
 			this.historyIndicator++;
 			matchVersion();
 			enableButtons();
@@ -641,19 +656,22 @@ public class GUI extends Application {
 	 * Data display and output scene.
 	 */
 	private void DataDisplayScene(Stage primaryStage) {
-		// Layer.
+		// Layers.
 		VBox mainPane = new VBox();
 		mainPane.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 		HBox upperPane = new HBox();
 		upperPane.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT - 100);
+		VBox bigLeftVBox = new VBox();
+		bigLeftVBox.setPrefSize(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100);
 		VBox leftVBox = new VBox(15);
 		leftVBox.setPadding(new Insets(10, 0, 0, 0));
-		leftVBox.setPrefSize(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100);
+		leftVBox.setPrefSize(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 150);
+		bigLeftVBox.getChildren().add(leftVBox);
 		textArea = new TextArea();
 		textArea.setPromptText("Ready to display...");
 		textArea.setMinHeight(WINDOW_HEIGHT - 100);
 		textArea.setEditable(false);
-		upperPane.getChildren().addAll(leftVBox,
+		upperPane.getChildren().addAll(bigLeftVBox,
 				new Line(GUI.WINDOW_WIDTH / 2 + 3, 0, GUI.WINDOW_WIDTH / 2 + 3, WINDOW_HEIGHT - 100), textArea);
 		HBox buttomHBox = new HBox(15);
 		buttomHBox.setPrefSize(WINDOW_WIDTH / 2, 100);
@@ -663,10 +681,12 @@ public class GUI extends Application {
 		line1.setPadding(new Insets(0, 0, 0, 10));
 		Label label1 = new Label("FARM REPORT -- By month for specified farm and year:");
 		label1.setPadding(new Insets(0, 0, 0, 10));
+		// Farm ID selection.
 		ComboBox<String> comboBoxFarm1 = new ComboBox<String>();
 		comboBoxFarm1.getItems().addAll(this.database.getFarmIDList());
 		comboBoxFarm1.setPromptText("Farm ID");
 		comboBoxFarm1.setPrefSize(125, 30);
+		// Enable and set next comboBox according to selection.
 		comboBoxFarm1.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
 			@Override
 			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
@@ -675,6 +695,7 @@ public class GUI extends Application {
 				comboBoxYear1.setDisable(false);
 			}
 		});
+		// Year selection.
 		comboBoxYear1 = new ComboBox<Integer>();
 		comboBoxYear1.setPromptText("Year");
 		comboBoxYear1.setPrefSize(125, 30);
@@ -685,6 +706,7 @@ public class GUI extends Application {
 				getButton1.setDisable(false);
 			}
 		});
+		// Get button.
 		getButton1 = new Button("Get");
 		getButton1.setPrefSize(50, 30);
 		getButton1.setDisable(true);
@@ -698,6 +720,7 @@ public class GUI extends Application {
 		line2.setPadding(new Insets(0, 0, 0, 10));
 		Label label2 = new Label("MONTHLY FARM REPORT -- By farms for specified month and year:");
 		label2.setPadding(new Insets(0, 0, 0, 10));
+		// Year selection.
 		ComboBox<Integer> comboBoxYear2 = new ComboBox<Integer>();
 		comboBoxYear2.getItems().addAll(this.database.getYearList());
 		comboBoxYear2.setPromptText("Year");
@@ -710,6 +733,7 @@ public class GUI extends Application {
 				comboBoxMonth2.setDisable(false);
 			}
 		});
+		// Month selection.
 		comboBoxMonth2 = new ComboBox<Integer>();
 		comboBoxMonth2.setPromptText("Month");
 		comboBoxMonth2.setPrefSize(125, 30);
@@ -720,6 +744,7 @@ public class GUI extends Application {
 				getButton2.setDisable(false);
 			}
 		});
+		// Get button.
 		getButton2 = new Button("Get");
 		getButton2.setPrefSize(50, 30);
 		getButton2.setDisable(true);
@@ -733,6 +758,7 @@ public class GUI extends Application {
 		line3.setPadding(new Insets(0, 0, 0, 10));
 		Label label3 = new Label("ANNUAL/MONTHLY REPORT -- Each farm's share of net sales: ");
 		label3.setPadding(new Insets(0, 0, 0, 10));
+		// Year selection.
 		ComboBox<Integer> comboBoxYear3 = new ComboBox<Integer>();
 		comboBoxYear3.getItems().addAll(this.database.getYearList());
 		comboBoxYear3.setPromptText("Year");
@@ -746,10 +772,12 @@ public class GUI extends Application {
 				getButton3.setDisable(false);
 			}
 		});
+		// Month selection.
 		comboBoxMonth3 = new ComboBox<Integer>();
 		comboBoxMonth3.setPromptText("Month");
 		comboBoxMonth3.setPrefSize(125, 30);
 		comboBoxMonth3.setDisable(true);
+		// Get button.
 		getButton3 = new Button("Get");
 		getButton3.setPrefSize(50, 30);
 		getButton3.setDisable(true);
@@ -763,12 +791,14 @@ public class GUI extends Application {
 		line4.setPadding(new Insets(0, 0, 0, 10));
 		Label label4 = new Label("DATE RANGE REPORT -- Total weight and the percentage for each farm:");
 		label4.setPadding(new Insets(0, 0, 0, 10));
+		// Start date selection.
 		comboBoxRange1 = new ComboBox<Integer>();
 		List<Integer> allDates = this.database.getAllDates();
 		List<Integer> notAllDates = new ArrayList<Integer>();
 		comboBoxRange1.getItems().addAll(allDates);
 		comboBoxRange1.setPromptText("Start Date");
 		comboBoxRange1.setPrefSize(125, 30);
+		// End date selection.
 		comboBoxRange2 = new ComboBox<Integer>();
 		comboBoxRange2.setPromptText("End Date");
 		comboBoxRange2.setPrefSize(125, 30);
@@ -793,6 +823,7 @@ public class GUI extends Application {
 				getButton4.setDisable(false);
 			}
 		});
+		// Get button.
 		getButton4 = new Button("Get");
 		getButton4.setPrefSize(50, 30);
 		getButton4.setDisable(true);
@@ -803,22 +834,20 @@ public class GUI extends Application {
 		leftVBox.getChildren().addAll(label4, line4, new Line(0, 30, GUI.WINDOW_WIDTH / 2, 30));
 		// Clear Button
 		HBox clearBox = new HBox();
-		clearBox.setPrefSize(WINDOW_WIDTH / 2, 30);
-		clearBox.setPadding(new Insets(0, 10, 0, 0));
+		clearBox.setPrefSize(WINDOW_WIDTH / 2, 50);
+		clearBox.setPadding(new Insets(10, 0, 10, 0));
 		clearBox.setAlignment(Pos.TOP_CENTER);
 		Button clearBtn = new Button("Clear All");
-		clearBtn.setPrefSize(100, 20);
+		clearBtn.setPrefSize(BUTTONORMAL_WIDTH, BUTTONORMAL_HEIGHT);
 		clearBox.getChildren().add(clearBtn);
-		leftVBox.getChildren().add(clearBox);
+		bigLeftVBox.getChildren().add(clearBox);
 		// Buttom pane.
 		buttomHBox.setPrefSize(WINDOW_WIDTH, 100);
 		buttomHBox.setPadding(new Insets(0, 10, 10, 0));
 		Button previousBtn = new Button("Previous");
-		previousBtn.setMinHeight(30);
-		previousBtn.setMinWidth(100);
+		previousBtn.setPrefSize(BUTTONORMAL_WIDTH, BUTTONORMAL_HEIGHT);
 		Button exitBtn = new Button("Exit");
-		exitBtn.setMinHeight(30);
-		exitBtn.setMinWidth(100);
+		exitBtn.setPrefSize(BUTTONORMAL_WIDTH, BUTTONORMAL_HEIGHT);
 		TEAMLABEL.setPadding(new Insets(0, 390, 0, 0));
 		TEAMLABEL.setFont(new Font("Arial", 10));
 		buttomHBox.getChildren().addAll(TEAMLABEL, previousBtn, exitBtn);
@@ -912,7 +941,14 @@ public class GUI extends Application {
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 		File file = directoryChooser.showDialog(primaryStage);
 		if (file != null && !file.getPath().equals("")) {
-			String path = file.getPath() + "\\" + name;
+			// Check system name and set path.
+			String osName = System.getProperty("os.name");
+			String path = "";
+			if (osName.startsWith("Windows")) {
+				path = file.getPath() + "\\" + name;
+			} else {
+				path = file.getPath() + "/" + name;
+			}
 			try {
 				PrintWriter out = new PrintWriter(new FileWriter(new File(path)));
 				out.print(content);
@@ -923,5 +959,5 @@ public class GUI extends Application {
 			}
 		}
 	}
-	
+
 }

@@ -30,4 +30,4 @@ Which team members were on same xteam together?
 
 Other notes or comments to the grader:
 
-	It is a 99% complete version.
+	Only .csv files can be opened.

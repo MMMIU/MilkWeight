@@ -2,6 +2,8 @@
  * FileOutputContentGenerator.java created by Yifei Miao in Milk Weight project.
  *
  * Author: Yifei Miao (ymiao29@wisc.edu) Date: 2020/04/21 Version : 1.0.0
+ * 
+ * Date 2020/4/28 Version: 1.1.0
  *
  * Course: COMPSCI 400 Lecture Number: 001 Semester: Spring 2020
  * 
@@ -89,7 +91,7 @@ public class FileOutputContentGenerator {
 	 */
 	public String monthlyFarmReport(int year, int month) {
 		String result = "";
-		List<OneRecord> list = this.database.getAllRecordsInAYear(year).get(month - 1);
+		List<OneRecord> list = this.database.getAllRecordsInAMonth(year * 100 + month);
 		result = "Monthly farm report: Min, max, average weight for all farms in " + monthTrans(month) + ", " + year
 				+ ":\nFarm ID, min(date)(percent), max(date)(percent), average";
 		this.sortUsingIDUp(list);
@@ -143,8 +145,8 @@ public class FileOutputContentGenerator {
 	public String monthlyReportYM(int year, int month) {
 		String result = "";
 		List<OneRecord> list = this.database.getAllRecordsInAYear(year).get(month - 1);
-		result = "Monthly report: Each farm's share (% of total weight of the month) of net sales in " + monthTrans(month) + ", " + year
-				+ ":\nFarm ID, total weight, share(%)";
+		result = "Monthly report: Each farm's share (% of total weight of the month) of net sales in "
+				+ monthTrans(month) + ", " + year + ":\nFarm ID, total weight, share(%)";
 		this.sortUsingIDUp(list);
 		long totalWeight = 0;
 		for (OneRecord r : list) {
@@ -269,7 +271,7 @@ public class FileOutputContentGenerator {
 	private String monthTrans(int month) {
 		switch (month) {
 		case 1:
-			return "Januarary";
+			return "January";
 		case 2:
 			return "Feburary";
 		case 3:
@@ -292,7 +294,6 @@ public class FileOutputContentGenerator {
 			return "November";
 		case 12:
 			return "December";
-
 		default:
 			return "Error";
 		}

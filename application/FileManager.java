@@ -2,6 +2,8 @@
  * FileManager.java created by Yifei Miao in Milk Weight project.
  *
  * Author: Yifei Miao (ymiao29@wisc.edu) Date: 2020/04/21 Version : 1.0.0
+ * 
+ * Date 2020/4/28 Version: 1.1.0
  *
  * Course: COMPSCI 400 Lecture Number: 001 Semester: Spring 2020
  *
@@ -82,6 +84,9 @@ public class FileManager {
 		return errorFiles;
 	}
 
+	/*
+	 * Combine three parts in data set together and return a record.
+	 */
 	public OneRecord generateRecordUsingData(String[] data) {
 		// Create a record.
 		OneRecord record = new OneRecord(data[1].trim().toUpperCase(), 0, Integer.parseInt(data[2].trim()));
@@ -222,6 +227,9 @@ public class FileManager {
 	 * Check if input string is an integer.
 	 */
 	public boolean isDigit(String s) {
+		if(s==null||s.equals("")) {
+			return false;
+		}
 		Pattern pattern = Pattern.compile("[0-9]*");
 		return pattern.matcher(s).matches();
 	}
