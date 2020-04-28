@@ -156,7 +156,7 @@ public class GUI extends Application {
 		fileChooserBtn.setMinWidth(SEARCHBARBUTTON_WIDTH);
 		fileClearBtn = new Button("Clear");
 		fileClearBtn.setMinWidth(SEARCHBARBUTTON_WIDTH);
-		// Button to open fileChooser.
+		// Button to open files.
 		fileOpenBtn = new Button("Open");
 		fileOpenBtn.setMinWidth(SEARCHBARBUTTON_WIDTH);
 		// Add components to SearchBar.
@@ -281,6 +281,7 @@ public class GUI extends Application {
 				}
 				text += files.get(files.size() - 1).getName().toString();
 				searchBoxTextField.setText(text);
+				this.fileOpenBtn.requestFocus();
 			}
 			enableButtons();
 		});
@@ -916,7 +917,7 @@ public class GUI extends Application {
 				PrintWriter out = new PrintWriter(new FileWriter(new File(path)));
 				out.print(content);
 				out.close();
-				popUpWindow("SUCCESS", "Successfully output data into " + path);
+				popUpWindow("SUCCESS", "Successfully output data into\n" + path);
 			} catch (IOException e) {
 				errorWindow("Error: not able to write data into " + path);
 			}

@@ -68,9 +68,9 @@ public class FileOutputContentGenerator {
 				}
 				double minPercent = 100;
 				double maxPercent = 100;
-				if (average != 0) {
-					minPercent = 100 * min / average;
-					maxPercent = 100 * max / average;
+				if (total != 0) {
+					minPercent = 100.0 * min / total;
+					maxPercent = 100.0 * max / total;
 					average = 1.0 * total / records.size();
 				}
 				result += String.format("\n%3s, %9d, %d(%.3f), %d(%.3f), %.3f\n", (i + 1), total, min, minPercent, max,
