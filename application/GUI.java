@@ -15,7 +15,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javafx.application.Application;
@@ -30,7 +29,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -52,7 +50,6 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 /**
  * @author Yifei Miao
@@ -92,8 +89,8 @@ public class GUI extends Application {
 	private ObservableList<OneRecord> tableList;
 	private List<List<OneRecord>> tableListHistory;
 	private Label recordsCount, farmCount, weightCount, daysCount, earliestDate, latestDate;
-	private Button fileOpenBtn, fileClearBtn, deleteButton, deleteAllButton, unDoButton, reDoButton, nextBtn,
-			getButton1, getButton2, getButton3, getButton4, output1, output2, output3, output4;
+	private Button fileOpenBtn, fileClearBtn, deleteButton, deleteAllButton, unDoButton, reDoButton, nextBtn, getBtn1,
+			getBtn2, getBtn3, getBtn4, outputBtn1, outputBtn2, outputBtn3, outputBtn4;
 	private TableView<OneRecord> tableView;
 	private TextField searchBoxTextField;
 	private TextArea textArea;
@@ -693,6 +690,8 @@ public class GUI extends Application {
 				comboBoxYear1.getItems().clear();
 				comboBoxYear1.getItems().addAll(database.getYearListOfAFarm(newValue.toString()));
 				comboBoxYear1.setDisable(false);
+				getBtn1.setDisable(true);
+				outputBtn1.setDisable(true);
 			}
 		});
 		// Year selection.
@@ -703,17 +702,18 @@ public class GUI extends Application {
 		comboBoxYear1.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
 			@Override
 			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
-				getButton1.setDisable(false);
+				getBtn1.setDisable(false);
+				outputBtn1.setDisable(true);
 			}
 		});
 		// Get button.
-		getButton1 = new Button("Get");
-		getButton1.setPrefSize(50, 30);
-		getButton1.setDisable(true);
-		output1 = new Button("Output");
-		output1.setPrefSize(80, 30);
-		output1.setDisable(true);
-		line1.getChildren().addAll(comboBoxFarm1, comboBoxYear1, getButton1, output1);
+		getBtn1 = new Button("Get");
+		getBtn1.setPrefSize(50, 30);
+		getBtn1.setDisable(true);
+		outputBtn1 = new Button("Output");
+		outputBtn1.setPrefSize(80, 30);
+		outputBtn1.setDisable(true);
+		line1.getChildren().addAll(comboBoxFarm1, comboBoxYear1, getBtn1, outputBtn1);
 		leftVBox.getChildren().addAll(label1, line1, new Line(0, 30, GUI.WINDOW_WIDTH / 2, 30));
 		// Line 2.
 		HBox line2 = new HBox(15);
@@ -731,6 +731,8 @@ public class GUI extends Application {
 				comboBoxMonth2.getItems().clear();
 				comboBoxMonth2.getItems().addAll(database.getMonthListOfAYear(Integer.parseInt(newValue.toString())));
 				comboBoxMonth2.setDisable(false);
+				getBtn2.setDisable(true);
+				outputBtn2.setDisable(true);
 			}
 		});
 		// Month selection.
@@ -741,17 +743,18 @@ public class GUI extends Application {
 		comboBoxMonth2.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
 			@Override
 			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
-				getButton2.setDisable(false);
+				getBtn2.setDisable(false);
+				outputBtn2.setDisable(true);
 			}
 		});
 		// Get button.
-		getButton2 = new Button("Get");
-		getButton2.setPrefSize(50, 30);
-		getButton2.setDisable(true);
-		output2 = new Button("Output");
-		output2.setPrefSize(80, 30);
-		output2.setDisable(true);
-		line2.getChildren().addAll(comboBoxYear2, comboBoxMonth2, getButton2, output2);
+		getBtn2 = new Button("Get");
+		getBtn2.setPrefSize(50, 30);
+		getBtn2.setDisable(true);
+		outputBtn2 = new Button("Output");
+		outputBtn2.setPrefSize(80, 30);
+		outputBtn2.setDisable(true);
+		line2.getChildren().addAll(comboBoxYear2, comboBoxMonth2, getBtn2, outputBtn2);
 		leftVBox.getChildren().addAll(label2, line2, new Line(0, 30, GUI.WINDOW_WIDTH / 2, 30));
 		// Line 3.
 		HBox line3 = new HBox(15);
@@ -769,7 +772,8 @@ public class GUI extends Application {
 				comboBoxMonth3.getItems().clear();
 				comboBoxMonth3.getItems().addAll(database.getMonthListOfAYear(Integer.parseInt(newValue.toString())));
 				comboBoxMonth3.setDisable(false);
-				getButton3.setDisable(false);
+				getBtn3.setDisable(false);
+				outputBtn3.setDisable(true);
 			}
 		});
 		// Month selection.
@@ -778,13 +782,13 @@ public class GUI extends Application {
 		comboBoxMonth3.setPrefSize(125, 30);
 		comboBoxMonth3.setDisable(true);
 		// Get button.
-		getButton3 = new Button("Get");
-		getButton3.setPrefSize(50, 30);
-		getButton3.setDisable(true);
-		output3 = new Button("Output");
-		output3.setPrefSize(80, 30);
-		output3.setDisable(true);
-		line3.getChildren().addAll(comboBoxYear3, comboBoxMonth3, getButton3, output3);
+		getBtn3 = new Button("Get");
+		getBtn3.setPrefSize(50, 30);
+		getBtn3.setDisable(true);
+		outputBtn3 = new Button("Output");
+		outputBtn3.setPrefSize(80, 30);
+		outputBtn3.setDisable(true);
+		line3.getChildren().addAll(comboBoxYear3, comboBoxMonth3, getBtn3, outputBtn3);
 		leftVBox.getChildren().addAll(label3, line3, new Line(0, 30, GUI.WINDOW_WIDTH / 2, 30));
 		// Line 4.
 		HBox line4 = new HBox(15);
@@ -815,22 +819,25 @@ public class GUI extends Application {
 				}
 				comboBoxRange2.getItems().addAll(notAllDates);
 				comboBoxRange2.setDisable(false);
+				getBtn4.setDisable(true);
+				outputBtn4.setDisable(true);
 			}
 		});
 		comboBoxRange2.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
 			@Override
 			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
-				getButton4.setDisable(false);
+				getBtn4.setDisable(false);
+				outputBtn4.setDisable(true);
 			}
 		});
 		// Get button.
-		getButton4 = new Button("Get");
-		getButton4.setPrefSize(50, 30);
-		getButton4.setDisable(true);
-		output4 = new Button("Output");
-		output4.setPrefSize(80, 30);
-		output4.setDisable(true);
-		line4.getChildren().addAll(comboBoxRange1, comboBoxRange2, getButton4, output4);
+		getBtn4 = new Button("Get");
+		getBtn4.setPrefSize(50, 30);
+		getBtn4.setDisable(true);
+		outputBtn4 = new Button("Output");
+		outputBtn4.setPrefSize(80, 30);
+		outputBtn4.setDisable(true);
+		line4.getChildren().addAll(comboBoxRange1, comboBoxRange2, getBtn4, outputBtn4);
 		leftVBox.getChildren().addAll(label4, line4, new Line(0, 30, GUI.WINDOW_WIDTH / 2, 30));
 		// Clear Button
 		HBox clearBox = new HBox();
@@ -859,63 +866,63 @@ public class GUI extends Application {
 
 		// Button Operations
 		// getButton1
-		getButton1.setOnAction((ActionEvent e) -> {
+		getBtn1.setOnAction((ActionEvent e) -> {
 			String farmID = comboBoxFarm1.getSelectionModel().getSelectedItem();
 			int year = comboBoxYear1.getSelectionModel().getSelectedItem();
 			this.output1Content = outputer.farmReport(farmID, year);
-			this.output1.setDisable(false);
+			this.outputBtn1.setDisable(false);
 			this.textArea.setText(output1Content);
 			output1Name = "Farm report-" + farmID + "-" + year + ".txt";
 		});
 		// getButton2
-		getButton2.setOnAction((ActionEvent e) -> {
+		getBtn2.setOnAction((ActionEvent e) -> {
 			int year = comboBoxYear2.getSelectionModel().getSelectedItem();
 			int month = comboBoxMonth2.getSelectionModel().getSelectedItem() % 100;
 			this.output2String = outputer.monthlyFarmReport(year, month);
 			this.textArea.setText(output2String);
 			this.output2Name = "One month farm report-" + year + "-" + month + ".txt";
-			this.output2.setDisable(false);
+			this.outputBtn2.setDisable(false);
 		});
 		// getButton3
-		getButton3.setOnAction((ActionEvent e) -> {
+		getBtn3.setOnAction((ActionEvent e) -> {
 			if (comboBoxMonth3.getValue() != null) {
 				int year = comboBoxYear3.getSelectionModel().getSelectedItem();
 				int month = comboBoxMonth3.getSelectionModel().getSelectedItem() % 100;
 				this.output3String = outputer.monthlyReportYM(year, month);
 				this.textArea.setText(this.output3String);
 				this.output3Name = "Monthly report-" + year + "-" + month + ".txt";
-				this.output3.setDisable(false);
+				this.outputBtn3.setDisable(false);
 			} else {
 				int year = comboBoxYear3.getSelectionModel().getSelectedItem();
 				this.output3String = outputer.annualReportY(year);
 				this.textArea.setText(this.output3String);
 				this.output3Name = "Annual report-" + year + ".txt";
-				this.output3.setDisable(false);
+				this.outputBtn3.setDisable(false);
 			}
 		});
 		// getButton4
-		getButton4.setOnAction((ActionEvent e) -> {
+		getBtn4.setOnAction((ActionEvent e) -> {
 			int startDate = comboBoxRange1.getSelectionModel().getSelectedItem();
 			int endDate = comboBoxRange2.getSelectionModel().getSelectedItem();
 			this.output4String = outputer.dateRangeReport(startDate, endDate);
 			this.textArea.setText(this.output4String);
 			this.output4Name = "Date range report-" + startDate + "-" + endDate + ".txt";
-			this.output4.setDisable(false);
+			this.outputBtn4.setDisable(false);
 		});
 		// Output1 Button
-		output1.setOnAction((ActionEvent e) -> {
+		outputBtn1.setOnAction((ActionEvent e) -> {
 			this.outputFile(primaryStage, this.output1Name, output1Content);
 		});
 		// Output2 Button
-		output2.setOnAction((ActionEvent e) -> {
+		outputBtn2.setOnAction((ActionEvent e) -> {
 			this.outputFile(primaryStage, this.output2Name, output2String);
 		});
 		// Output3 Button
-		output3.setOnAction((ActionEvent e) -> {
+		outputBtn3.setOnAction((ActionEvent e) -> {
 			this.outputFile(primaryStage, this.output3Name, output3String);
 		});
 		// Output4 Button
-		output4.setOnAction((ActionEvent e) -> {
+		outputBtn4.setOnAction((ActionEvent e) -> {
 			this.outputFile(primaryStage, this.output4Name, output4String);
 		});
 		// Clear Button
@@ -931,7 +938,7 @@ public class GUI extends Application {
 			primaryStage.close();
 			System.exit(0);
 		});
-		getButton1.requestFocus();
+		getBtn1.requestFocus();
 	}
 
 	/*
