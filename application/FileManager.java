@@ -25,10 +25,14 @@ public class FileManager {
 
 	// Private members.
 	private Database databse;
+	private List<Integer> positions;
+	private int lineCounter;
 
 	// Constructor.
 	public FileManager(Database database) {
 		this.databse = database;
+		this.positions = new ArrayList<Integer>();
+		this.lineCounter = 1;
 	}
 
 	/*
@@ -39,15 +43,19 @@ public class FileManager {
 	public List<File> addFiles(List<File> files) {
 		// List of files with error.
 		List<File> errorFiles = new ArrayList<>();
+		this.positions.clear();
+		;
 		// Iterator.
 		for (File file : files) {
 			try {
+				this.lineCounter = 1;
 				// Scanner.
 				Scanner scanner = new Scanner(file);
 				boolean valid = true;
 				// Ignore first title line.
 				if (scanner.hasNextLine()) {
 					scanner.nextLine();
+					lineCounter++;
 				}
 				// Temporary list to store records in a file.
 				List<OneRecord> records = new ArrayList<>();
@@ -63,12 +71,14 @@ public class FileManager {
 					if (!this.checkData(data)) {
 						errorFiles.add(file);
 						valid = false;
+						positions.add(lineCounter);
 						break;
 					} else {
 						OneRecord record = this.generateRecordUsingData(data);
 						// Add the record to the temporary list
 						records.add(record);
 					}
+					lineCounter++;
 				}
 				// If no error in the file, add records to database.
 				if (valid) {
@@ -79,6 +89,7 @@ public class FileManager {
 				scanner.close();
 			} catch (FileNotFoundException e) {
 				errorFiles.add(file);
+				positions.add(0);
 			}
 		}
 		return errorFiles;
@@ -92,7 +103,7 @@ public class FileManager {
 		OneRecord record = new OneRecord(data[1].trim().toUpperCase(), 0, Integer.parseInt(data[2].trim()));
 		// Add date in suitable format to the record.
 		String date = data[0];
-		if (this.isDigit(date)) {
+		if (this.isPositiveInteger(date)) {
 			record.setDate(Integer.parseInt(date));
 		} else {
 			String[] dateParts = data[0].trim().split("-");
@@ -153,7 +164,7 @@ public class FileManager {
 		// Check date.
 		String date = data[0];
 		// Check date is in Integer format.
-		if (this.isDigit(date)) {
+		if (this.isPositiveInteger(date)) {
 			record.setDate(Integer.parseInt(date));
 		} else {
 			// Check 3 parts exist.
@@ -162,7 +173,8 @@ public class FileManager {
 				return false;
 			}
 			// Check 3 parts are all digit and add date to the temporary record.
-			if (this.isDigit(dateParts[0]) && this.isDigit(dateParts[1]) && this.isDigit(dateParts[2])) {
+			if (this.isPositiveInteger(dateParts[0]) && this.isPositiveInteger(dateParts[1])
+					&& this.isPositiveInteger(dateParts[2])) {
 				record.setDate(Integer.parseInt(dateParts[0]) * 10000 + Integer.parseInt(dateParts[1]) * 100
 						+ Integer.parseInt(dateParts[2]));
 			} else {
@@ -172,7 +184,7 @@ public class FileManager {
 		// Set ID.
 		record.setFarmID(data[1].toUpperCase());
 		// Set Weight.
-		if (this.isDigit(data[2])) {
+		if (this.isPositiveInteger(data[2])) {
 			record.setWeight(Integer.parseInt(data[2]));
 		} else {
 			return false;
@@ -226,11 +238,18 @@ public class FileManager {
 	/*
 	 * Check if input string is an integer.
 	 */
-	public boolean isDigit(String s) {
-		if(s==null||s.equals("")) {
+	public boolean isPositiveInteger(String s) {
+		if (s == null || s.equals("")) {
 			return false;
 		}
 		Pattern pattern = Pattern.compile("[0-9]*");
-		return pattern.matcher(s).matches();
+		return pattern.matcher(s).matches() && s.length() <= 10 && Long.parseLong(s) <= Integer.MAX_VALUE;
+	}
+
+	/*
+	 * Return list of positions where errors occurred in error files.
+	 */
+	public List<Integer> getErrorPositions() {
+		return this.positions;
 	}
 }

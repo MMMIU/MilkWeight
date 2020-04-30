@@ -1,7 +1,7 @@
 /*
  * FileOutputContentGenerator.java created by Yifei Miao in Milk Weight project.
  *
- * Author: Yifei Miao (ymiao29@wisc.edu) Date: 2020/04/21 Version : 1.0.0
+ * Author: Yifei Miao (ymiao29@wisc.edu) Date: 2020/04/30 Version : 1.1.0
  * 
  * Date 2020/4/28 Version: 1.1.0
  *
@@ -48,8 +48,14 @@ public class FileOutputContentGenerator {
 			}
 		}
 		if (!empty) {
-			result = "Farm report: Min, max, average weight by month for " + farmID + " in " + year
-					+ ":\nMonth, month total, min(percent), max(percent), average";
+			// Get total weight of a year.
+			long yearTotalWeight = 0;
+			long farmTotalWeight = 0;
+			for (List<OneRecord> months : this.database.getAllRecordsInAYear(year)) {
+				for (OneRecord record : months) {
+					yearTotalWeight += record.getWeight();
+				}
+			}
 			for (int i = 0; i < 12; i++) {
 				List<OneRecord> records = list.get(i);
 				int min = -1;
@@ -64,20 +70,32 @@ public class FileOutputContentGenerator {
 						max = r.getWeight();
 					}
 					total += r.getWeight();
+					farmTotalWeight += r.getWeight();
 				}
 				if (min == -1) {
 					max = min = 0;
 				}
+				double monthPercent = 0;
 				double minPercent = 100;
 				double maxPercent = 100;
 				if (total != 0) {
+					long monthTotal = 0;
+					for (OneRecord record : this.database.getAllRecordsInAYear(year).get(i)) {
+						monthTotal += record.getWeight();
+					}
+					monthPercent = 100.0 * monthTotal / yearTotalWeight;
 					minPercent = 100.0 * min / total;
 					maxPercent = 100.0 * max / total;
 					average = 1.0 * total / records.size();
 				}
-				result += String.format("\n%3s, %9d, %d(%.3f), %d(%.3f), %.3f\n", (i + 1), total, min, minPercent, max,
-						maxPercent, average);
+				result += String.format("\n%3s, %9d(%.3f), %d(%.3f), %d(%.3f), %.3f", (i + 1), total, monthPercent, min,
+						minPercent, max, maxPercent, average);
 			}
+			result = "Farm report: Min, max, average weight by month for " + farmID + " in " + year + ":"
+					+ "\n\nAll farms year total weight, farm total weight, percent:\n" + yearTotalWeight + ", "
+					+ farmTotalWeight + ", " + String.format("%.3f", 100.0 * farmTotalWeight / yearTotalWeight)
+					+ "\n\nMonth, month total(percent of the year total(%)), min(percent of the month total(%)), max(percent of the month total(%)), average:"
+					+ result;
 		}
 		return result;
 	}
@@ -93,7 +111,7 @@ public class FileOutputContentGenerator {
 		String result = "";
 		List<OneRecord> list = this.database.getAllRecordsInAMonth(year * 100 + month);
 		result = "Monthly farm report: Min, max, average weight for all farms in " + monthTrans(month) + ", " + year
-				+ ":\nFarm ID, min(date)(percent), max(date)(percent), average";
+				+ ":\n\nFarm ID, min(date)(percent of the month total(%)), max(date)(percent of the month total(%)), average:";
 		this.sortUsingIDUp(list);
 		while (list.size() > 0) {
 			OneRecord record = list.get(0);
@@ -128,7 +146,7 @@ public class FileOutputContentGenerator {
 			for (OneRecord r : tmp) {
 				list.remove(r);
 			}
-			result += String.format("\n%10s, %6d(%d)(%.3f), %6d(%d)(%.3f), %9.3f\n", record.getFarmID(), min, minDate,
+			result += String.format("\n%10s, %6d(%d)(%.3f), %6d(%d)(%.3f), %9.3f", record.getFarmID(), min, minDate,
 					minPercent, max, maxDate, maxPercent, average);
 		}
 		return result;
@@ -145,13 +163,15 @@ public class FileOutputContentGenerator {
 	public String monthlyReportYM(int year, int month) {
 		String result = "";
 		List<OneRecord> list = this.database.getAllRecordsInAYear(year).get(month - 1);
-		result = "Monthly report: Each farm's share (% of total weight of the month) of net sales in "
-				+ monthTrans(month) + ", " + year + ":\nFarm ID, total weight, share(%)";
+		result = "Monthly report: Each farm's total weight and percent of the month toal in " + monthTrans(month) + ", "
+				+ year + ":";
 		this.sortUsingIDUp(list);
 		long totalWeight = 0;
 		for (OneRecord r : list) {
 			totalWeight += r.getWeight();
 		}
+		result += "\n\nTotal Weight:\n" + totalWeight
+				+ "\n\nFarm ID, total weight in the month, percent of month total(%):";
 		while (list.size() > 0) {
 			OneRecord record = list.get(0);
 			list.remove(0);
@@ -170,8 +190,7 @@ public class FileOutputContentGenerator {
 			if (totalWeight != 0) {
 				share = farmTotal * 100.0 / totalWeight;
 			}
-
-			result += String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal, share);
+			result += String.format("\n%10s, %8d, %.3f", record.getFarmID(), farmTotal, share);
 
 		}
 		return result;
@@ -195,12 +214,13 @@ public class FileOutputContentGenerator {
 			}
 		}
 		sortUsingIDUp(list);
-		result = "Annual report: Each farm's share (% of total weight of the year) of net sales in " + year
-				+ ":\nFarm ID, total weight, share(%)";
 		long totalWeight = 0;
 		for (OneRecord r : list) {
 			totalWeight += r.getWeight();
 		}
+		result = "Annual report: Each farm's total weight and percent of the month toal in " + year + ":"
+				+ "\n\nTotal weight:\n" + totalWeight
+				+ "\n\nFarm ID, total weight in the year, percent of year total(%):";
 		while (list.size() > 0) {
 			OneRecord record = list.get(0);
 			list.remove(0);
@@ -219,7 +239,7 @@ public class FileOutputContentGenerator {
 			if (totalWeight != 0) {
 				share = farmTotal * 100.0 / totalWeight;
 			}
-			result += String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal, share);
+			result += String.format("\n%10s, %8d, %.3f", record.getFarmID(), farmTotal, share);
 		}
 		return result;
 	}
@@ -236,12 +256,13 @@ public class FileOutputContentGenerator {
 		String result = "";
 		List<OneRecord> list = this.database.getAllRecordsInDateRange(startDate, endDate);
 		sortUsingIDUp(list);
-		result = "Date range report: Total milk weight per farm and the percentage of the total for each farm between "
-				+ startDate + " and " + endDate + ":\nFarm ID, total weight, share(%)";
 		long totalWeight = 0;
 		for (OneRecord r : list) {
 			totalWeight += r.getWeight();
 		}
+		result = "Date range report: Total milk weight per farm and the percentage of the total for each farm between "
+				+ startDate + " and " + endDate + "\n\nTotal weight:\n" + totalWeight
+				+ "\n\nFarm ID, total weight in the date range, percent of total weight in the date range(%):";
 		while (list.size() > 0) {
 			OneRecord record = list.get(0);
 			list.remove(0);
@@ -260,7 +281,7 @@ public class FileOutputContentGenerator {
 			if (totalWeight != 0) {
 				share = farmTotal * 100.0 / totalWeight;
 			}
-			result += String.format("\n%10s, %8d, %.3f\n", record.getFarmID(), farmTotal, share);
+			result += String.format("\n%10s, %8d, %.3f", record.getFarmID(), farmTotal, share);
 		}
 		return result;
 	}

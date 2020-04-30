@@ -313,10 +313,17 @@ public class GUI extends Application {
 				}
 				if (errorFiles.size() > 0) {
 					String errorText = "";
+					List<Integer> positions = this.fileManager.getErrorPositions();
 					for (int i = 0; i < errorFiles.size(); i++) {
 						errorText += "\n" + (i + 1) + ". " + errorFiles.get(i).getPath().toString();
+						if (positions.get(i) > 0) {
+							errorText += "\nAt line " + positions.get(i);
+						} else {
+							errorText += "\n File cannot be found";
+						}
 					}
-					this.errorWindow("Error Reading from " + errorFiles.size() + " file(s): " + errorText);
+					this.errorWindow("Error Reading from " + errorFiles.size()
+							+ " file(s), it could be format errors or data errors: " + errorText);
 				}
 				files.clear();
 			}
@@ -436,6 +443,7 @@ public class GUI extends Application {
 		date.setAlignment(Pos.CENTER);
 		date.setMinHeight(ADDWIDOW_HEIGHT - 5);
 		TextField dateText = new TextField();
+		dateText.setPromptText("Example: 2020-4-30");
 		// Weight.
 		Label weight = new Label("Weight:");
 		weight.setAlignment(Pos.CENTER);
@@ -468,7 +476,8 @@ public class GUI extends Application {
 				this.tableList.add(0, record);
 				historyManager(true, false, false);
 			} else {
-				this.errorWindow("Incorrect format of data, please check.");
+				this.errorWindow(
+						"Incorrect data format or size, please check.\nSample input:farm x,2020-4-30,12345");
 			}
 			refreshStats();
 			enableButtons();
@@ -759,7 +768,7 @@ public class GUI extends Application {
 		// Line 3.
 		HBox line3 = new HBox(15);
 		line3.setPadding(new Insets(0, 0, 0, 10));
-		Label label3 = new Label("ANNUAL/MONTHLY REPORT -- Each farm's share of net sales: ");
+		Label label3 = new Label("ANNUAL/MONTHLY REPORT -- Each farm's share of total(Month optional): ");
 		label3.setPadding(new Insets(0, 0, 0, 10));
 		// Year selection.
 		ComboBox<Integer> comboBoxYear3 = new ComboBox<Integer>();
@@ -962,7 +971,7 @@ public class GUI extends Application {
 				out.close();
 				popUpWindow("SUCCESS", "Successfully output data into\n" + path);
 			} catch (IOException e) {
-				errorWindow("Error: not able to write data into " + path);
+				errorWindow("Error: cannot write data into " + path);
 			}
 		}
 	}

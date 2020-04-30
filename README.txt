@@ -25,9 +25,10 @@ Team Members:
 
 Which team members were on same xteam together?
 
-	No members are in the same x.
+	No members are in the same xteam.
 
 
 Other notes or comments to the grader:
 
 	Only .csv files can be opened.
+	Only integer weight can be accepted.
